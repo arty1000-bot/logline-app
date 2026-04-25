@@ -1,0 +1,72 @@
+{
+  "name": "Logline — Maritime Operations",
+  "short_name": "Logline",
+  "description": "Real-time vessel operations dashboard for bridge, engine, and crew coordination at sea.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1A1B22",
+  "theme_color": "#12D4FF",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231A1B22' width='192' height='192'/><path fill='%2312D4FF' d='M96,32 L144,80 L144,160 C144,168.8 137.6,176 129,176 L63,176 C54.4,176 48,168.8 48,160 L48,80 L96,32 M96,16 L32,80 L32,160 C32,176.6 44.4,192 60,192 L132,192 C147.6,192 160,176.6 160,160 L160,80 L96,16 Z'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%231A1B22' width='512' height='512'/><path fill='%2312D4FF' d='M256,64 L384,192 L384,448 C384,464 372,480 356,480 L156,480 C140,480 128,464 128,448 L128,192 L256,64 M256,32 L64,192 L64,448 C64,480 92,512 128,512 L384,512 C420,512 448,480 448,448 L448,192 L256,32 Z'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%231A1B22' width='540' height='720'/><rect fill='%23242630' x='20' y='20' width='500' height='680' rx='40'/><text x='270' y='120' font-family='sans-serif' font-size='32' fill='%2312D4FF' text-anchor='middle' font-weight='bold'>Logline</text><text x='270' y='200' font-family='monospace' font-size='18' fill='%23B0C2C6' text-anchor='middle'>Bridge Operations</text></svg>",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bridge",
+      "short_name": "Bridge",
+      "description": "Navigate to bridge operations",
+      "url": "/?tab=bridge",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%2312D4FF' width='96' height='96' rx='16'/><path fill='%231A1B22' d='M24,48 L72,48 M48,24 L48,72 M36,36 L60,36 L60,60 L36,60 Z'/></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Maintenance",
+      "short_name": "Maintenance",
+      "description": "Open maintenance tracking",
+      "url": "/?tab=maint",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%23FFB017' width='96' height='96' rx='16'/><path fill='%231A1B22' d='M48,12 L72,36 L48,48 L24,36 Z M24,48 L48,60 L72,48 L48,72 L24,60 Z'/></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
