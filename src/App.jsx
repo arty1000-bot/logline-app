@@ -12,8 +12,11 @@ import {
   Wrench,
   PlusCircle, TrendingDown, Leaf,
   Lock, Eye, LogOut, Moon, Check, Sun,
-  Ship, MapPin, Info, Anchor, Briefcase, Map, Edit3
+  Ship, MapPin, Info, Anchor, Briefcase, Map, Edit3, Loader
 } from 'lucide-react';
+
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
 
 // ═══════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -34,6 +37,30 @@ const utcNow  = ()    => new Date().toISOString();
 const utcTime = ()    => new Date().toISOString().substr(11,5) + 'Z';
 const utcFull = (iso) => iso ? new Date(iso).toISOString().substr(0,16).replace('T',' ')+'Z' : '—';
 const utcDate = ()    => new Date().toISOString().substr(0,10);
+
+// ═══════════════════════════════════════════════════════
+// GEO HELPERS
+// ═══════════════════════════════════════════════════════
+const parseDeg = str => {
+  if (!str) return 0;
+  const m = str.match(/^(\d+)°([\d.]+)?([NSEW])$/);
+  if (!m) return 0;
+  const deg = parseFloat(m[1]) + (parseFloat(m[2] || '0') / 60);
+  return (m[3] === 'S' || m[3] === 'W') ? -deg : deg;
+};
+
+const degToCompass = deg => {
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+};
+
+const PORT_COORDS = {
+  NLRTM: [51.9225,  4.4792],
+  SGSIN: [ 1.2641, 103.819],
+  USLGB: [33.7545,-118.217],
+  AEJEA: [25.0070,  55.066],
+  SAJED: [21.4858,  39.193],
+};
 
 // ═══════════════════════════════════════════════════════
 // SEED DATA
@@ -174,7 +201,8 @@ const fmtUSD = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'US
 const getETA = d => {
   const dt = new Date();
   dt.setUTCDate(dt.getUTCDate() + d);
-  return dt.toISOString().substr(0,10) + ' 08:00Z';
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]}`;
 };
 const hraActive = p => !!p?.hra;
 const ciiFor    = p => (p?.blocked)
@@ -276,6 +304,57 @@ const CiiDisclaimer = () => (
     <p style={{fontSize:12,color:T.accent.amber,margin:0,lineHeight:1.5}}>CII and ETS figures are indicative estimates. Not for regulatory submission.</p>
   </div>
 );
+
+// ═══════════════════════════════════════════════════════
+// MAP AUTO-FIT — recalculates size on mount
+// ═══════════════════════════════════════════════════════
+function MapInvalidator() {
+  const map = useMap();
+  useEffect(() => { setTimeout(() => map.invalidateSize(), 120); }, [map]);
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════
+// VESSEL MAP
+// ═══════════════════════════════════════════════════════
+const VesselMap = ({ vessel, destination }) => {
+  const lat  = parseDeg(vessel.lat);
+  const lon  = parseDeg(vessel.lon);
+  const dest = PORT_COORDS[destination.id] || [0, 0];
+
+  const shipIcon = L.divIcon({
+    html: `<div style="width:14px;height:14px;background:#12D4FF;border-radius:50%;border:3px solid #fff;box-shadow:0 0 10px rgba(18,212,255,0.8)"></div>`,
+    className: '',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  });
+
+  const portIcon = L.divIcon({
+    html: `<div style="width:10px;height:10px;background:${destination.blocked?'#FF5A5F':'#00E58F'};border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px rgba(0,0,0,0.5)"></div>`,
+    className: '',
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
+  });
+
+  return (
+    <MapContainer
+      center={[lat, lon]}
+      zoom={4}
+      style={{ height: '100%', width: '100%' }}
+      zoomControl={false}
+      attributionControl={false}
+    >
+      <MapInvalidator/>
+      <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"/>
+      <Marker position={[lat, lon]} icon={shipIcon}/>
+      <Marker position={dest} icon={portIcon}/>
+      <Polyline
+        positions={[[lat, lon], dest]}
+        pathOptions={{ color:'#524EFA', weight:2, dashArray:'6 4', opacity:0.75 }}
+      />
+    </MapContainer>
+  );
+};
 
 // ═══════════════════════════════════════════════════════
 // ONBOARDING — FIX: Position validation
@@ -529,7 +608,22 @@ const RerouteModal = ({fromPort,toPort,onConfirm,onCancel}) => {
         </div>
         <h2 style={{fontSize:19,fontWeight:700,margin:'0 0 3px',color:T.text.vessel}}>{fromPort.name} → {toPort.name}</h2>
         <p style={{fontSize:13,color:T.text.muted,margin:'0 0 20px'}}>All steps required before order is issued</p>
-        <div className="shimmer-box" style={{height:100,borderRadius:T.radius.md,marginBottom:20,width:'100%'}}/>
+        <div style={{background:T.bg.canvas,borderRadius:T.radius.md,padding:'16px 18px',marginBottom:20}}>
+          <p style={{fontSize:11,fontWeight:700,color:T.text.muted,textTransform:'uppercase',letterSpacing:'0.04em',margin:'0 0 12px'}}>Route Change</p>
+          <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',gap:8,alignItems:'center'}}>
+            <div>
+              <p style={{fontSize:10,color:T.text.faint,margin:'0 0 2px',textTransform:'uppercase'}}>From</p>
+              <p style={{fontSize:14,fontWeight:700,color:T.accent.coral,margin:0}}>{fromPort.name}</p>
+              <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:'2px 0 0'}}>{fromPort.id}</p>
+            </div>
+            <Navigation size={16} color={T.text.faint}/>
+            <div style={{textAlign:'right'}}>
+              <p style={{fontSize:10,color:T.text.faint,margin:'0 0 2px',textTransform:'uppercase'}}>To</p>
+              <p style={{fontSize:14,fontWeight:700,color:T.accent.green,margin:0}}>{toPort.name}</p>
+              <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:'2px 0 0'}}>{toPort.id}</p>
+            </div>
+          </div>
+        </div>
         {stepBar}
 
         {step===1&&(
@@ -654,7 +748,7 @@ const ShipBottomBar = ({activeTab,setActiveTab,defects,pscItems,currentUser}) =>
   ];
   const tabs = restricted ? allTabs.filter(t=>t.id==='bridge'||t.id==='crew') : allTabs;
   return (
-    <nav aria-label="Main Navigation" style={{background:'rgba(36,38,48,0.92)',backdropFilter:'blur(20px)',padding:'14px 10px 30px',display:'flex',justifyContent:'space-around',borderRadius:'28px 28px 0 0',boxShadow:T.shadow.bottomNav,flexShrink:0,zIndex:50}}>
+    <nav aria-label="Main Navigation" style={{background:'rgba(36,38,48,0.92)',backdropFilter:'blur(20px)',padding:'14px 20px 30px',display:'flex',justifyContent:'space-around',borderRadius:'28px 28px 0 0',boxShadow:T.shadow.bottomNav,flexShrink:0,zIndex:50}}>
       {tabs.map(({id,label,icon:Icon,badge})=>(
         <button key={id} onClick={()=>setActiveTab(id)} role="tab" aria-selected={activeTab===id} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5,color:activeTab===id?T.accent.primary:T.text.faint,background:'none',border:'none',cursor:'pointer',position:'relative'}}>
           <div key={activeTab===id?'active':'inactive'} style={{width:44,height:30,borderRadius:14,background:activeTab===id?T.accent.soft:'transparent',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.25s',animation:activeTab===id?'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)':'none'}}>
@@ -682,6 +776,31 @@ function BridgeViewWrapper({visible}) {
   const [posErr,      setPosErr]      = useState('');
   const [tempLat,     setTempLat]     = useState(vessel.lat);
   const [tempLon,     setTempLon]     = useState(vessel.lon);
+  const [liveWx,      setLiveWx]      = useState(null);
+  const [wxLoading,   setWxLoading]   = useState(false);
+
+  useEffect(() => {
+    if (bridgeSub !== 'weather') return;
+    const lat = parseDeg(vessel.lat);
+    const lon = parseDeg(vessel.lon);
+    if (!lat && !lon) return;
+    setWxLoading(true);
+    Promise.all([
+      fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height,swell_wave_height,sea_surface_temperature`).then(r=>r.json()),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=wind_speed_10m,wind_direction_10m,surface_pressure,visibility&wind_speed_unit=kn`).then(r=>r.json()),
+    ]).then(([marine, atmo]) => {
+      setLiveWx({
+        wave:      marine.current?.wave_height,
+        swell:     marine.current?.swell_wave_height,
+        seaTemp:   marine.current?.sea_surface_temperature,
+        windSpeed: atmo.current?.wind_speed_10m,
+        windDir:   atmo.current?.wind_direction_10m,
+        baro:      atmo.current?.surface_pressure,
+        vis:       atmo.current?.visibility != null ? (atmo.current.visibility / 1000).toFixed(1) : null,
+      });
+      setWxLoading(false);
+    }).catch(() => setWxLoading(false));
+  }, [bridgeSub, vessel.lat, vessel.lon]);
 
   const filtered = GLOBAL_PORTS.filter(p=>p.name.toLowerCase().includes(query.toLowerCase())||p.id.toLowerCase().includes(query.toLowerCase())||p.country.toLowerCase().includes(query.toLowerCase()));
 
@@ -704,7 +823,7 @@ function BridgeViewWrapper({visible}) {
     <main aria-label="Bridge" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',position:'relative',minHeight:'100%'}}>
       <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
         <div>
-          <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',color:T.text.vessel,margin:0}}>{vessel.name}</h1>
+          <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',color:T.accent.cyan,margin:0}}>{vessel.name}</h1>
           <p style={{fontSize:12,color:T.text.muted,fontWeight:500,margin:'3px 0 0'}}>{vessel.imo} · {vessel.flag}</p>
         </div>
       </header>
@@ -712,8 +831,8 @@ function BridgeViewWrapper({visible}) {
       <SubTabs tabs={['passage','weather','log']} active={bridgeSub} setActive={setBridgeSub}/>
 
       {bridgeSub==='passage'&&<>
-        <div className="shimmer-box" style={{height:140,borderRadius:T.radius.lg,display:'flex',alignItems:'center',justifyContent:'center'}}>
-          <Map size={32} color={T.text.faint} style={{opacity:0.5}}/>
+        <div style={{height:180,borderRadius:T.radius.lg,overflow:'hidden',border:`1px solid ${T.bg.surfaceAlt}`}}>
+          {visible && <VesselMap vessel={vessel} destination={activePort}/>}
         </div>
 
         {editPos?(
@@ -780,7 +899,7 @@ function BridgeViewWrapper({visible}) {
               </div>
             ):(
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <Stat label="ETA (UTC)"  value={getETA(activePort.etaDays)}/>
+                <Stat label="ETA (UTC)"  value={getETA(activePort.etaDays)} unit="08:00Z"/>
                 <Stat label="Dist to Go" value={fmt(activePort.dist)} unit="NM"/>
                 <Stat label="SOG"        value="13.4" unit="kts" accent={T.accent.green}/>
                 <Stat label="COG"        value="312°"/>
@@ -805,12 +924,28 @@ function BridgeViewWrapper({visible}) {
 
       {bridgeSub==='weather'&&(
         <div style={{display:'flex',flexDirection:'column',gap:18}}>
+          {wxLoading&&(
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0'}}>
+              <Loader size={14} color={T.accent.primary} style={{animation:'spin 1s linear infinite'}}/>
+              <span style={{fontSize:12,color:T.text.muted}}>Fetching live conditions…</span>
+            </div>
+          )}
           <Card className="hover-card">
-            <CardHeader icon={Wind} title={`Environment · ${activePort.region}`}/>
+            <CardHeader icon={Wind} title={`Environment · ${vessel.lat} ${vessel.lon}${liveWx?' · Live':''}`}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-              <Stat label="Wind"  value={activePort.wind}/><Stat label="Sea Ht" value="1.4" unit="m"/>
-              <Stat label="Swell" value={activePort.swell}/><Stat label="Vis."  value="8"   unit="NM"/>
-              <Stat label="Temp"  value="31" unit="°C"/><Stat label="Baro"     value="1014" unit="hPa"/>
+              <Stat label="Wind"
+                    value={liveWx?.windSpeed!=null ? `${degToCompass(liveWx.windDir)} ${Math.round(liveWx.windSpeed)}` : activePort.wind}
+                    unit={liveWx?.windSpeed!=null ? 'kt' : undefined}/>
+              <Stat label="Sea Ht"
+                    value={liveWx?.wave!=null ? liveWx.wave.toFixed(1) : '1.4'} unit="m"/>
+              <Stat label="Swell"
+                    value={liveWx?.swell!=null ? liveWx.swell.toFixed(1) : activePort.swell} unit="m"/>
+              <Stat label="Vis."
+                    value={liveWx?.vis!=null ? liveWx.vis : '8'} unit="NM"/>
+              <Stat label="Sea Temp"
+                    value={liveWx?.seaTemp!=null ? liveWx.seaTemp.toFixed(1) : '31'} unit="°C"/>
+              <Stat label="Baro"
+                    value={liveWx?.baro!=null ? Math.round(liveWx.baro) : '1014'} unit="hPa"/>
             </div>
           </Card>
           <Card className="hover-card">
@@ -894,7 +1029,7 @@ function BridgeViewWrapper({visible}) {
 const EngineView = ({visible}) => {
   const [engSub,setEngSub] = useState('plant');
   return (
-    <main aria-label="Engine" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px'}}>
+    <main aria-label="Engine" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',minHeight:'100%'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Engine Room</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Plant status & auxiliaries</p>
@@ -960,7 +1095,7 @@ const CrewView = ({visible}) => {
   const restricted = currentUser?.restricted;
   const depts = [...new Set(FULL_CREW.map(c=>c.dept))];
   return (
-    <main aria-label="Crew" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px'}}>
+    <main aria-label="Crew" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',minHeight:'100%'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Crew Roster</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>{FULL_CREW.length} POB · STCW compliant</p>
@@ -1025,7 +1160,7 @@ const MaintenanceView = ({visible}) => {
   ];
 
   return (
-    <main aria-label="Maintenance" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Maintenance" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',position:'relative',minHeight:'100%'}}>
       <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
         <div>
           <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Maintenance</h1>
@@ -1140,7 +1275,7 @@ const MaintenanceView = ({visible}) => {
 
       {showAdd&&(
         <div role="dialog" aria-modal="true" style={{position:'absolute',inset:0,zIndex:200,display:'flex',alignItems:'flex-end',animation:'backdropIn 0.3s ease-out forwards'}}>
-          <div style={{width:'100%',background:T.bg.surface,borderRadius:'32px 32px 0 0',padding:'28px 22px 40px',animation:'slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',maxHeight:'85vh',overflowY:'auto'}}>
+          <div style={{width:'100%',background:T.bg.surface,borderRadius:'32px 32px 0 0',padding:'28px 24px 40px',animation:'slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',maxHeight:'85vh',overflowY:'auto'}}>
             <h2 style={{fontSize:19,fontWeight:700,margin:'0 0 22px'}}>Log New Defect</h2>
             <div style={{display:'flex',flexDirection:'column',gap:14}}>
               {[{key:'system',label:'System',ph:'Main Engine'},{key:'component',label:'Component *',ph:'FW Cooler'},{key:'assignee',label:'Assigned To',ph:'Smith, R.'}].map(({key,label,ph})=>(
@@ -1187,7 +1322,7 @@ const OpsView = ({visible}) => {
   const logGmdss  = id => setGmdssItems(items=>items.map(item=>item.id===id?{...item,tested:true,testedAt:utcNow(),testedBy:currentUser?.label||'Officer'}:item));
 
   return (
-    <main aria-label="Ops" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Ops" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',position:'relative',minHeight:'100%'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Ship Ops</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Compliance & records</p>
@@ -1305,7 +1440,7 @@ const ShoreMarketView = ({visible}) => {
   const isHRA=hraActive(activePort);
   const markets=[{name:'Baltic Dry (BDI)',val:'1,842',chg:'+24',up:true},{name:'VLCC (AG–FEast)',val:'$44.2k',chg:'+$1.2k',up:true},{name:'VLSFO Singapore',val:'$648/mt',chg:'+$8',up:true}];
   return (
-    <main aria-label="Market" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px'}}>
+    <main aria-label="Market" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',minHeight:'100%'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Market Intel</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Indicative indices — not live data</p>
@@ -1341,7 +1476,7 @@ const ShoreMarketView = ({visible}) => {
 const FleetView = ({visible}) => {
   const vessels=[{name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden Passage',dest:'Rotterdam',hra:true},{name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'At Anchor',dest:'Singapore',hra:false}];
   return (
-    <main aria-label="Fleet" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px'}}>
+    <main aria-label="Fleet" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',minHeight:'100%'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Fleet Overview</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Active Voyages</p>
@@ -1369,7 +1504,7 @@ const CarbonView = ({visible}) => {
   const cii=ciiFor(activePort);
   const isRed=activePort?.blocked;
   return (
-    <main aria-label="Carbon" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px'}}>
+    <main aria-label="Carbon" style={{display:visible?'flex':'none',flexDirection:'column',gap:22,padding:'22px',minHeight:'100%'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Carbon & CII</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>EU ETS Emissions</p>
@@ -1497,6 +1632,11 @@ export default function App() {
           .role-card:active{transform:scale(0.98)}
 
           .shimmer-box{background:#2C2E3C;background-image:linear-gradient(to right,#2C2E3C 0%,#3a3d4f 20%,#2C2E3C 40%,#2C2E3C 100%);background-repeat:no-repeat;background-size:800px 100%;animation:shimmer 2s infinite linear forwards}
+          .leaflet-container{background:#1A1B22!important;font-family:'Inter',sans-serif!important}
+          .leaflet-popup-content-wrapper{background:#242630;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:1px solid #2C2E3C}
+          .leaflet-popup-content{color:#E8EDF0;font-size:13px;font-weight:600;margin:10px 14px}
+          .leaflet-popup-tip{background:#242630}
+          .leaflet-popup-close-button{color:#8E93A6!important}
           .grad-header{background:linear-gradient(270deg,rgba(82,78,250,0.2),rgba(18,212,255,0.2),rgba(82,78,250,0.2));background-size:200% 200%;animation:gradShift 4s ease infinite}
 
           *{box-sizing:border-box}
