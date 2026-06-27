@@ -766,7 +766,7 @@ const ShipBottomBar = ({activeTab,setActiveTab,defects,pscItems,currentUser}) =>
 // BRIDGE — FIX: Position editing
 // ═══════════════════════════════════════════════════════
 function BridgeViewWrapper() {
-  const {activePort,setActivePort,vessel,setVessel,bridgeSub,setBridgeSub,deckLog,setDeckLog} = useApp();
+  const {activePort,setActivePort,vessel,setVessel,bridgeSub,setBridgeSub,deckLog,setDeckLog,scrollH} = useApp();
   const [isSearch,    setIsSearch]    = useState(false);
   const [query,       setQuery]       = useState('');
   const [showReroute, setShowReroute] = useState(false);
@@ -820,7 +820,7 @@ function BridgeViewWrapper() {
   };
 
   return (
-    <main aria-label="Bridge" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Bridge" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px',position:'relative'}}>
       <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
         <div>
           <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',color:T.accent.cyan,margin:0}}>{vessel.name}</h1>
@@ -1027,9 +1027,10 @@ function BridgeViewWrapper() {
 
 // ── ENGINE ───────────────────────────────────────────────
 const EngineView = () => {
+  const {scrollH} = useApp();
   const [engSub,setEngSub] = useState('plant');
   return (
-    <main aria-label="Engine" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px'}}>
+    <main aria-label="Engine" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Engine Room</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Plant status & auxiliaries</p>
@@ -1091,11 +1092,11 @@ const EngineView = () => {
 
 // ── CREW ─────────────────────────────────────────────────
 const CrewView = () => {
-  const {currentUser} = useApp();
+  const {currentUser,scrollH} = useApp();
   const restricted = currentUser?.restricted;
   const depts = [...new Set(FULL_CREW.map(c=>c.dept))];
   return (
-    <main aria-label="Crew" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px'}}>
+    <main aria-label="Crew" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Crew Roster</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>{FULL_CREW.length} POB · STCW compliant</p>
@@ -1131,7 +1132,7 @@ const CrewView = () => {
 
 // ── MAINTENANCE ────────────────────────────────────────────
 const MaintenanceView = () => {
-  const {defects,setDefects} = useApp();
+  const {defects,setDefects,scrollH} = useApp();
   const [maintSub,    setMaintSub]    = useState('jobs');
   const [showAdd,     setShowAdd]     = useState(false);
   const [expandedDef, setExpandedDef] = useState(null);
@@ -1160,7 +1161,7 @@ const MaintenanceView = () => {
   ];
 
   return (
-    <main aria-label="Maintenance" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Maintenance" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px',position:'relative'}}>
       <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
         <div>
           <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Maintenance</h1>
@@ -1310,7 +1311,7 @@ const MaintenanceView = () => {
 
 // ── OPS ────────────────────────────────────────────────────
 const OpsView = () => {
-  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,currentUser} = useApp();
+  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,currentUser,scrollH} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
   const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',remarks:''});
@@ -1322,7 +1323,7 @@ const OpsView = () => {
   const logGmdss  = id => setGmdssItems(items=>items.map(item=>item.id===id?{...item,tested:true,testedAt:utcNow(),testedBy:currentUser?.label||'Officer'}:item));
 
   return (
-    <main aria-label="Ops" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Ops" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px',position:'relative'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Ship Ops</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Compliance & records</p>
@@ -1436,11 +1437,11 @@ const OpsView = () => {
 
 // ── SHORE VIEWS ────────────────────────────────────────────
 const ShoreMarketView = () => {
-  const {activePort}=useApp();
+  const {activePort,scrollH}=useApp();
   const isHRA=hraActive(activePort);
   const markets=[{name:'Baltic Dry (BDI)',val:'1,842',chg:'+24',up:true},{name:'VLCC (AG–FEast)',val:'$44.2k',chg:'+$1.2k',up:true},{name:'VLSFO Singapore',val:'$648/mt',chg:'+$8',up:true}];
   return (
-    <main aria-label="Market" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px'}}>
+    <main aria-label="Market" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Market Intel</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Indicative indices — not live data</p>
@@ -1474,9 +1475,10 @@ const ShoreMarketView = () => {
 };
 
 const FleetView = () => {
+  const {scrollH}=useApp();
   const vessels=[{name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden Passage',dest:'Rotterdam',hra:true},{name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'At Anchor',dest:'Singapore',hra:false}];
   return (
-    <main aria-label="Fleet" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px'}}>
+    <main aria-label="Fleet" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Fleet Overview</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Active Voyages</p>
@@ -1500,11 +1502,11 @@ const FleetView = () => {
 };
 
 const CarbonView = () => {
-  const {activePort}=useApp();
+  const {activePort,scrollH}=useApp();
   const cii=ciiFor(activePort);
   const isRed=activePort?.blocked;
   return (
-    <main aria-label="Carbon" style={{display:'flex',flexDirection:'column',flex:'1 0 auto',gap:22,padding:'22px'}}>
+    <main aria-label="Carbon" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Carbon & CII</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>EU ETS Emissions</p>
@@ -1545,6 +1547,8 @@ export default function App() {
   const [nvgMode,     setNvgMode]     = useState(false);
   const [loaded,      setLoaded]      = useState(false);
   const [scrolled,    setScrolled]    = useState(false);
+  const [scrollH,     setScrollH]     = useState(0);
+  const scrollRef = useRef(null);
 
   useEffect(()=>{
     (async()=>{
@@ -1595,12 +1599,20 @@ export default function App() {
   const handleSetupDone = useCallback(v=>{ setVessel(v); setNeedsSetup(false); setActiveTab('bridge'); },[]);
   const handleScroll    = useCallback(e=>setScrolled(e.target.scrollTop>10),[]);
 
+  useEffect(()=>{
+    if(!scrollRef.current) return;
+    const ro = new ResizeObserver(entries=>setScrollH(entries[0].contentRect.height));
+    ro.observe(scrollRef.current);
+    setScrollH(scrollRef.current.clientHeight);
+    return()=>ro.disconnect();
+  },[currentUser]);
+
   const ctx = {
     activePort,setActivePort,vessel,setVessel,
     defects,setDefects,pscItems,setPscItems,gmdssItems,setGmdssItems,
     noonLogged,setNoonLogged,
     deckLog,setDeckLog,
-    bridgeSub,setBridgeSub,currentUser,
+    bridgeSub,setBridgeSub,currentUser,scrollH,
   };
 
   const nvgFilter = nvgMode?'sepia(1) saturate(5) hue-rotate(295deg) brightness(0.52)':'none';
@@ -1655,7 +1667,7 @@ export default function App() {
           ):(
             <>
               <MobileStatusBar onLogout={handleLogout} onToggleNvg={()=>setNvgMode(m=>!m)} nvgMode={nvgMode} scrolled={scrolled}/>
-              <div onScroll={handleScroll} style={{flex:1,display:'flex',flexDirection:'column',overflowY:'auto',overflowX:'hidden',scrollbarWidth:'none',background:T.bg.canvas}}>
+              <div ref={scrollRef} onScroll={handleScroll} style={{flex:1,display:'flex',flexDirection:'column',overflowY:'auto',overflowX:'hidden',scrollbarWidth:'none',background:T.bg.canvas}}>
                 {currentUser.shell==='shore'&&<>
                   {activeTab==='market'&&<ErrorBoundary><ShoreMarketView/></ErrorBoundary>}
                   {activeTab==='fleet' &&<ErrorBoundary><FleetView/></ErrorBoundary>}
