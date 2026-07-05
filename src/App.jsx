@@ -1440,6 +1440,11 @@ const ShoreMarketView = () => {
   const {activePort,scrollH}=useApp();
   const isHRA=hraActive(activePort);
   const markets=[{name:'Baltic Dry (BDI)',val:'1,842',chg:'+24',up:true},{name:'VLCC (AG–FEast)',val:'$44.2k',chg:'+$1.2k',up:true},{name:'VLSFO Singapore',val:'$648/mt',chg:'+$8',up:true}];
+  const fixtures=[
+    {route:'AG → Rotterdam',type:'VLCC',rate:'$44,000/day',cargo:'Crude Oil'},
+    {route:'W. Africa → Med',type:'Suezmax',rate:'$28,500/day',cargo:'Crude Oil'},
+    {route:'Black Sea → NW Eur',type:'Aframax',rate:'$21,200/day',cargo:'Dirty'},
+  ];
   return (
     <main aria-label="Market" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
@@ -1470,18 +1475,34 @@ const ShoreMarketView = () => {
           </div>
         ))}
       </Card>
+      <Card className="hover-card">
+        <CardHeader icon={Anchor} title="Charter Activity"/>
+        {fixtures.map((f,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 0',borderBottom:i<fixtures.length-1?`1px solid ${T.bg.canvas}`:'none',animation:`fadeUp 0.4s ease-out ${i*0.07}s both`}}>
+            <div>
+              <p style={{fontSize:13,fontWeight:600,color:T.text.vessel,margin:0}}>{f.route}</p>
+              <p style={{fontSize:11,color:T.text.faint,margin:'2px 0 0'}}>{f.type} · {f.cargo}</p>
+            </div>
+            <span style={{fontFamily:'monospace',fontSize:13,fontWeight:700,color:T.accent.green}}>{f.rate}</span>
+          </div>
+        ))}
+      </Card>
     </main>
   );
 };
 
 const FleetView = () => {
   const {scrollH}=useApp();
-  const vessels=[{name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden Passage',dest:'Rotterdam',hra:true},{name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'At Anchor',dest:'Singapore',hra:false}];
+  const vessels=[
+    {name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden Passage',dest:'Rotterdam',eta:'Jul 14',speed:'13.2 kn',hra:true},
+    {name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'At Anchor',dest:'Singapore',eta:'Jul 08',speed:'0.0 kn',hra:false},
+    {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:'Arrived',speed:'0.0 kn',hra:false},
+  ];
   return (
     <main aria-label="Fleet" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Fleet Overview</h1>
-        <p style={{fontSize:13,color:T.text.muted,margin:0}}>Active Voyages</p>
+        <p style={{fontSize:13,color:T.text.muted,margin:0}}>Active Voyages · {vessels.length} vessels</p>
       </header>
       {vessels.map((v,i)=>(
         <Card key={i} className="hover-card" style={{border:v.hra?`1px solid rgba(255,90,95,0.4)`:'1px solid transparent',animation:`fadeUp 0.4s ease-out ${i*0.05}s both`}}>
@@ -1493,7 +1514,10 @@ const FleetView = () => {
             {v.hra&&<Badge label="HRA" color={T.accent.coral} bg="rgba(255,90,95,0.15)"/>}
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-            <Stat label="Status" value={v.status}/><Stat label="Dest." value={v.dest}/>
+            <Stat label="Status" value={v.status}/>
+            <Stat label="Dest." value={v.dest}/>
+            <Stat label="ETA" value={v.eta}/>
+            <Stat label="Speed" value={v.speed}/>
           </div>
         </Card>
       ))}
@@ -1505,6 +1529,8 @@ const CarbonView = () => {
   const {activePort,scrollH}=useApp();
   const cii=ciiFor(activePort);
   const isRed=activePort?.blocked;
+  const cii2={score:'3.21',rating:'B',target:'4.00',dailyCO2:18.4,note:'On track. Slow-steam approach to Singapore recommended.'};
+  const totalETS=Math.round(cii.dailyCO2*74)+Math.round(cii2.dailyCO2*74);
   return (
     <main aria-label="Carbon" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
       <header>
@@ -1525,6 +1551,23 @@ const CarbonView = () => {
           <span style={{fontSize:12,color:isRed?T.accent.coral:T.accent.amber,lineHeight:1.5}}>{cii.note}</span>
         </div>
       </Card>
+      <Card className="hover-card">
+        <div style={{display:'flex',alignItems:'center',gap:8}}><Leaf size={16} color={T.accent.green}/><span style={{fontSize:13,fontWeight:700,color:T.accent.green}}>MT Pacific Star</span></div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+          <Stat label="CII Score"    value={cii2.score} accent={T.accent.green}/>
+          <Stat label="EU ETS Daily" value={fmtUSD(Math.round(cii2.dailyCO2*74))} accent={T.accent.green}/>
+          <Stat label="CII Rating"   value={cii2.rating} accent={T.accent.green}/>
+          <Stat label="Target Score" value={cii2.target}/>
+        </div>
+        <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'12px 14px',display:'flex',alignItems:'flex-start',gap:10,marginTop:2}}>
+          <TrendingDown size={14} color={T.accent.green} style={{flexShrink:0,marginTop:1}}/>
+          <span style={{fontSize:12,color:T.accent.green,lineHeight:1.5}}>{cii2.note}</span>
+        </div>
+      </Card>
+      <div style={{background:T.bg.surface,borderRadius:T.radius.md,padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <span style={{fontSize:13,color:T.text.muted,fontWeight:600}}>Fleet EU ETS Today</span>
+        <span style={{fontFamily:'monospace',fontSize:16,fontWeight:700,color:T.accent.amber}}>{fmtUSD(totalETS)}</span>
+      </div>
     </main>
   );
 };
