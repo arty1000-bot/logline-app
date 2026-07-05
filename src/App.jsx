@@ -1445,6 +1445,11 @@ const ShoreMarketView = () => {
     {route:'W. Africa → Med',type:'Suezmax',rate:'$28,500/day',cargo:'Crude Oil'},
     {route:'Black Sea → NW Eur',type:'Aframax',rate:'$21,200/day',cargo:'Dirty'},
   ];
+  const bunkers=[
+    {port:'Rotterdam',grade:'VLSFO',price:'$658/mt',chg:'+$10',up:true},
+    {port:'Fujairah',grade:'VLSFO',price:'$641/mt',chg:'+$5',up:true},
+    {port:'Singapore',grade:'MGO',price:'$783/mt',chg:'-$3',up:false},
+  ];
   return (
     <main aria-label="Market" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
       <header>
@@ -1484,6 +1489,21 @@ const ShoreMarketView = () => {
               <p style={{fontSize:11,color:T.text.faint,margin:'2px 0 0'}}>{f.type} · {f.cargo}</p>
             </div>
             <span style={{fontFamily:'monospace',fontSize:13,fontWeight:700,color:T.accent.green}}>{f.rate}</span>
+          </div>
+        ))}
+      </Card>
+      <Card className="hover-card">
+        <CardHeader icon={Droplets} title="Bunker Prices"/>
+        {bunkers.map((b,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 0',borderBottom:i<bunkers.length-1?`1px solid ${T.bg.canvas}`:'none',animation:`fadeUp 0.4s ease-out ${i*0.07}s both`}}>
+            <div>
+              <p style={{fontSize:13,fontWeight:600,color:T.text.vessel,margin:0}}>{b.port}</p>
+              <p style={{fontSize:11,color:T.text.faint,margin:'2px 0 0'}}>{b.grade}</p>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <span style={{fontFamily:'monospace',fontSize:13,fontWeight:700,color:T.text.data}}>{b.price}</span>
+              <span style={{fontSize:11,fontWeight:700,color:b.up?T.accent.coral:T.accent.green}}>{b.chg}</span>
+            </div>
           </div>
         ))}
       </Card>
@@ -1722,7 +1742,7 @@ export default function App() {
           ):(
             <>
               <MobileStatusBar onLogout={handleLogout} onToggleNvg={()=>setNvgMode(m=>!m)} nvgMode={nvgMode} scrolled={scrolled}/>
-              <div ref={scrollRef} onScroll={handleScroll} style={{flex:1,display:'flex',flexDirection:'column',overflowY:'auto',overflowX:'hidden',scrollbarWidth:'none',background:T.bg.canvas}}>
+              <div ref={scrollRef} onScroll={handleScroll} style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflowY:'auto',overflowX:'hidden',scrollbarWidth:'none',background:T.bg.canvas}}>
                 {currentUser.shell==='shore'&&<>
                   {activeTab==='market'&&<ErrorBoundary><ShoreMarketView/></ErrorBoundary>}
                   {activeTab==='fleet' &&<ErrorBoundary><FleetView/></ErrorBoundary>}
