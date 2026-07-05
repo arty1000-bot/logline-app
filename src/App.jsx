@@ -820,7 +820,7 @@ function BridgeViewWrapper() {
   };
 
   return (
-    <main aria-label="Bridge" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Bridge" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px',position:'relative'}}>
       <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
         <div>
           <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',color:T.accent.cyan,margin:0}}>{vessel.name}</h1>
@@ -1030,7 +1030,7 @@ const EngineView = () => {
   const {scrollH} = useApp();
   const [engSub,setEngSub] = useState('plant');
   return (
-    <main aria-label="Engine" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
+    <main aria-label="Engine" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Engine Room</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Plant status & auxiliaries</p>
@@ -1096,7 +1096,7 @@ const CrewView = () => {
   const restricted = currentUser?.restricted;
   const depts = [...new Set(FULL_CREW.map(c=>c.dept))];
   return (
-    <main aria-label="Crew" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
+    <main aria-label="Crew" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Crew Roster</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>{FULL_CREW.length} POB · STCW compliant</p>
@@ -1161,7 +1161,7 @@ const MaintenanceView = () => {
   ];
 
   return (
-    <main aria-label="Maintenance" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Maintenance" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px',position:'relative'}}>
       <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
         <div>
           <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Maintenance</h1>
@@ -1323,7 +1323,7 @@ const OpsView = () => {
   const logGmdss  = id => setGmdssItems(items=>items.map(item=>item.id===id?{...item,tested:true,testedAt:utcNow(),testedBy:currentUser?.label||'Officer'}:item));
 
   return (
-    <main aria-label="Ops" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px',position:'relative'}}>
+    <main aria-label="Ops" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px',position:'relative'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Ship Ops</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Compliance & records</p>
@@ -1446,7 +1446,7 @@ const ShoreMarketView = () => {
     {route:'Black Sea → NW Eur',type:'Aframax',rate:'$21,200/day',cargo:'Dirty'},
   ];
   return (
-    <main aria-label="Market" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
+    <main aria-label="Market" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Market Intel</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Indicative indices — not live data</p>
@@ -1487,6 +1487,10 @@ const ShoreMarketView = () => {
           </div>
         ))}
       </Card>
+      <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
+        <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
+        <span style={{fontSize:11,color:T.text.faint,fontFamily:'monospace'}}>VSAT · Last sync 22:27Z</span>
+      </div>
     </main>
   );
 };
@@ -1499,7 +1503,7 @@ const FleetView = () => {
     {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:'Arrived',speed:'0.0 kn',hra:false},
   ];
   return (
-    <main aria-label="Fleet" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
+    <main aria-label="Fleet" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Fleet Overview</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>Active Voyages · {vessels.length} vessels</p>
@@ -1521,6 +1525,10 @@ const FleetView = () => {
           </div>
         </Card>
       ))}
+      <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
+        <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
+        <span style={{fontSize:11,color:T.text.faint,fontFamily:'monospace'}}>AIS · Last sync 22:27Z</span>
+      </div>
     </main>
   );
 };
@@ -1532,7 +1540,7 @@ const CarbonView = () => {
   const cii2={score:'3.21',rating:'B',target:'4.00',dailyCO2:18.4,note:'On track. Slow-steam approach to Singapore recommended.'};
   const totalETS=Math.round(cii.dailyCO2*74)+Math.round(cii2.dailyCO2*74);
   return (
-    <main aria-label="Carbon" style={{display:'flex',flexDirection:'column',minHeight:scrollH||'100%',gap:22,padding:'22px'}}>
+    <main aria-label="Carbon" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Carbon & CII</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>EU ETS Emissions</p>
@@ -1567,6 +1575,10 @@ const CarbonView = () => {
       <div style={{background:T.bg.surface,borderRadius:T.radius.md,padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <span style={{fontSize:13,color:T.text.muted,fontWeight:600}}>Fleet EU ETS Today</span>
         <span style={{fontFamily:'monospace',fontSize:16,fontWeight:700,color:T.accent.amber}}>{fmtUSD(totalETS)}</span>
+      </div>
+      <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
+        <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
+        <span style={{fontSize:11,color:T.text.faint,fontFamily:'monospace'}}>EU MRV · Last sync 22:27Z</span>
       </div>
     </main>
   );
