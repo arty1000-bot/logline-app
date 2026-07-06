@@ -257,9 +257,9 @@ const CardHeader = ({icon:Icon,title,right}) => (
 );
 
 const Stat = ({label,value,unit,accent}) => (
-  <div style={{background:T.bg.surfaceAlt,borderRadius:T.radius.sm,padding:'14px',display:'flex',flexDirection:'column',gap:'4px'}}>
+  <div style={{background:T.bg.surfaceAlt,borderRadius:T.radius.sm,padding:'10px 12px',display:'flex',flexDirection:'column',gap:'4px'}}>
     <p style={{fontSize:11,color:T.text.muted,fontWeight:500,margin:0,textTransform:'uppercase',letterSpacing:'0.04em'}}>{label}</p>
-    <p style={{color:accent||T.text.data,fontSize:20,fontWeight:700,letterSpacing:'-0.02em',margin:0,lineHeight:1.1}}>
+    <p style={{color:accent||T.text.data,fontSize:17,fontWeight:700,letterSpacing:'-0.02em',margin:0,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
       {value}{unit&&<span style={{color:T.text.faint,fontSize:12,fontWeight:500,marginLeft:4}}>{unit}</span>}
     </p>
   </div>
@@ -1518,7 +1518,7 @@ const ShoreMarketView = () => {
 const FleetView = () => {
   const {scrollH}=useApp();
   const vessels=[
-    {name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden Passage',dest:'Rotterdam',eta:'Jul 14',speed:'13.2 kn',hra:true},
+    {name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden',dest:'Rotterdam',eta:'Jul 14',speed:'13.2 kn',hra:true},
     {name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'At Anchor',dest:'Singapore',eta:'Jul 08',speed:'0.0 kn',hra:false},
     {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:'Arrived',speed:'0.0 kn',hra:false},
   ];
