@@ -12,7 +12,8 @@ import {
   Wrench,
   PlusCircle, TrendingDown, Leaf,
   Lock, Eye, LogOut, Moon, Check, Sun,
-  Ship, MapPin, Info, Anchor, Briefcase, Map, Edit3, Loader
+  Ship, MapPin, Info, Anchor, Briefcase, Map, Edit3, Loader,
+  HelpCircle, ChevronDown
 } from 'lucide-react';
 
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
@@ -688,9 +689,122 @@ const RerouteModal = ({fromPort,toPort,onConfirm,onCancel}) => {
 };
 
 // ═══════════════════════════════════════════════════════
+// INLINE INFO TIP — small "i" that reveals a short explanation
+// ═══════════════════════════════════════════════════════
+const InfoTip = ({text,color}) => {
+  const [open,setOpen] = useState(false);
+  return (
+    <div style={{position:'relative',display:'inline-flex',verticalAlign:'middle'}}>
+      <button onClick={()=>setOpen(o=>!o)} aria-label="More info" aria-expanded={open}
+        style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',padding:2,marginLeft:4}}>
+        <Info size={13} color={color||T.text.muted}/>
+      </button>
+      {open&&(
+        <div role="tooltip" style={{position:'absolute',top:'135%',left:0,zIndex:900,width:216,background:T.bg.surfaceAlt,borderRadius:T.radius.sm,padding:'11px 13px',boxShadow:T.shadow.soft,border:`1px solid ${T.bg.canvas}`,animation:'fadeUp 0.2s ease-out'}}>
+          <p style={{fontSize:11,color:T.text.data,margin:0,lineHeight:1.55}}>{text}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════
+// HELP PANEL — role-aware how-to guide
+// ═══════════════════════════════════════════════════════
+const HELP_CONTENT = {
+  shore: [
+    {tab:'Market', icon:TrendingUp, items:[
+      {q:'What am I looking at?', a:'Live freight index snapshot and per-voyage P&L across the fleet, so shore ops can see earnings alongside operations.'},
+    ]},
+    {tab:'Fleet', icon:Ship, items:[
+      {q:'What does this show?', a:'A multi-vessel overview — position, status and open items for every ship in the fleet, in one shore-side screen.'},
+    ]},
+    {tab:'Carbon', icon:Leaf, items:[
+      {q:'Are these figures official?', a:'No — CII and EU ETS figures here are indicative estimates for planning, not for regulatory submission. Always flagged in-app.'},
+    ]},
+  ],
+  ship: [
+    {tab:'Bridge', icon:Navigation, items:[
+      {q:'Passage sub-tab', a:'Current position, destination, ETA and distance to go. Tap the search icon to change destination.'},
+      {q:'What is the red "PASSAGE DENIED" banner?', a:'The destination sits in a High Risk Area (HRA). Company policy requires a formal 3-step diversion order — reviewed, previewed, then confirmed — before the Master can proceed.'},
+      {q:'Weather sub-tab', a:'Live wind, sea height, swell, sea temperature and pressure fetched for the vessel\'s exact position — no manual entry needed.'},
+      {q:'Log sub-tab', a:'Deck log entries, time-stamped and attributed to the signed-in officer. Tap the mic to dictate instead of typing.'},
+    ]},
+    {tab:'Engine', icon:Settings, items:[
+      {q:'What does this track?', a:'Main engine plant status (load, RPM, temperatures, pressures) under Plant, and generator/auxiliary systems under Aux — a read-only live snapshot for the watchkeeper.'},
+    ]},
+    {tab:'Crew', icon:Users, items:[
+      {q:'What does this track?', a:'Full crew roster with rank, certificate type and STCW rest-hours compliance status at a glance.'},
+    ]},
+    {tab:'Maint', icon:Wrench, items:[
+      {q:'Jobs sub-tab', a:'Open defects — priority, status, and whether they\'re linked to a PSC (Port State Control) finding. Tap "Log" to raise a new one.'},
+      {q:'Schedule / Spares sub-tabs', a:'Upcoming planned-maintenance jobs, and remaining-on-board spare parts levels.'},
+    ]},
+    {tab:'Ops', icon:ClipboardList, items:[
+      {q:'PSC sub-tab', a:'Port State Control readiness checklist — tap items as they\'re verified before an inspection.'},
+      {q:'GMDSS sub-tab', a:'Radio/distress equipment test log, timestamped and officer-attributed.'},
+      {q:'Noon sub-tab', a:'Daily noon report. The biometric "sign" step is simulated for this demo — production would call the vessel\'s actual biometric hardware.'},
+      {q:'Muster sub-tab', a:'Emergency muster station assignments for the crew.'},
+    ]},
+  ],
+};
+
+const HelpAccordionSection = ({tab,icon:Icon,items}) => {
+  const [openIdx,setOpenIdx] = useState(null);
+  return (
+    <div style={{marginBottom:18}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+        <Icon size={15} color={T.accent.cyan}/>
+        <span style={{fontSize:13,fontWeight:700,color:T.text.main}}>{tab}</span>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:6}}>
+        {items.map((item,i)=>(
+          <div key={i} style={{background:T.bg.canvas,borderRadius:T.radius.sm,overflow:'hidden'}}>
+            <button onClick={()=>setOpenIdx(o=>o===i?null:i)} aria-expanded={openIdx===i}
+              style={{width:'100%',background:'none',border:'none',cursor:'pointer',padding:'12px 14px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,textAlign:'left'}}>
+              <span style={{fontSize:12.5,fontWeight:600,color:T.text.vessel}}>{item.q}</span>
+              <ChevronDown size={14} color={T.text.faint} style={{flexShrink:0,transition:'transform 0.2s',transform:openIdx===i?'rotate(180deg)':'none'}}/>
+            </button>
+            {openIdx===i&&(
+              <p style={{fontSize:12,color:T.text.data,margin:0,padding:'0 14px 14px',lineHeight:1.6,animation:'fadeUp 0.2s ease-out'}}>{item.a}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const HelpPanel = ({currentUser,onClose}) => {
+  const shell = currentUser?.shell==='shore' ? 'shore' : 'ship';
+  const allSections = HELP_CONTENT[shell];
+  const sections = currentUser?.restricted
+    ? allSections.filter(s=>s.tab==='Bridge'||s.tab==='Crew')
+    : allSections;
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Help" style={{position:'absolute',inset:0,zIndex:1000,display:'flex',alignItems:'flex-end',animation:'backdropIn 0.3s ease-out forwards'}}>
+      <div style={{width:'100%',background:T.bg.surface,borderRadius:'32px 32px 0 0',padding:'28px 24px 40px',animation:'slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',maxHeight:'85vh',overflowY:'auto'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:18}}>
+          <div>
+            <h2 style={{fontSize:18,fontWeight:700,margin:'0 0 3px'}}>Help & How-To</h2>
+            <p style={{fontSize:11,color:T.text.muted,margin:0}}>Guide for your current role — {currentUser?.label||'crew'}</p>
+          </div>
+          <button onClick={onClose} aria-label="Close help" style={{background:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}}>
+            <X size={15} color={T.text.muted}/>
+          </button>
+        </div>
+        {sections.map(s=><HelpAccordionSection key={s.tab} {...s}/>)}
+        <p style={{fontSize:10.5,color:T.text.faint,margin:'4px 0 0',lineHeight:1.6,textAlign:'center'}}>Logline v8 · Tap any question to expand</p>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════
 // STATUS BAR
 // ═══════════════════════════════════════════════════════
-const MobileStatusBar = ({onLogout,onToggleNvg,nvgMode,scrolled}) => {
+const MobileStatusBar = ({onLogout,onToggleNvg,onOpenHelp,nvgMode,scrolled}) => {
   const {activePort} = useApp();
   const isHRA = hraActive(activePort);
   const [time,setTime] = useState(utcTime());
@@ -704,6 +818,9 @@ const MobileStatusBar = ({onLogout,onToggleNvg,nvgMode,scrolled}) => {
         <span style={{fontSize:10,fontWeight:700,color:isHRA?T.accent.coral:T.accent.green,letterSpacing:'0.05em'}}>{isHRA?(activePort?.blocked?'BLOCKED':'HRA'):'CLEAR'}</span>
       </div>
       <div style={{display:'flex',gap:10,alignItems:'center'}}>
+        <button onClick={onOpenHelp} aria-label="Help" style={{background:'transparent',border:'none',cursor:'pointer',display:'flex',alignItems:'center',padding:2}}>
+          <HelpCircle size={15} color={T.text.muted}/>
+        </button>
         <button onClick={onToggleNvg} aria-label={nvgMode?'Disable NVG':'Enable NVG'} style={{background:'transparent',border:'none',cursor:'pointer',display:'flex',alignItems:'center',padding:2}}>
           {nvgMode?<Sun size={15} color={T.accent.amber}/>:<Moon size={15} color={T.text.muted}/>}
         </button>
@@ -881,6 +998,7 @@ function BridgeViewWrapper() {
             <div style={{background:T.accent.coral,padding:'10px 20px',display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
               <AlertOctagon size={15} color="#fff"/>
               <span style={{fontSize:12,fontWeight:700,color:'#fff',letterSpacing:'0.06em'}}>PASSAGE DENIED</span>
+              <InfoTip color="#fff" text="This destination sits in a High Risk Area (HRA). Company policy requires a formal 3-step diversion order — reviewed, previewed, then confirmed — before the Master can proceed."/>
             </div>
           )}
           <div style={{padding:'18px 20px',display:'flex',flexDirection:'column',gap:14}}>
@@ -1408,6 +1526,10 @@ const OpsView = () => {
                   <textarea value={noonForm.remarks} onChange={e=>setNoonForm(f=>({...f,remarks:e.target.value}))} placeholder="Any observations…" rows={3} style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%',resize:'none'}}/>
                 </div>
               </Card>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:2,padding:'0 4px'}}>
+                <span style={{fontSize:11,color:T.text.faint}}>Uses simulated biometric sign-off</span>
+                <InfoTip text="This demo simulates the biometric step in-app. In production this would call the vessel's actual fingerprint/Face ID hardware for a tamper-proof, officer-attributed signature."/>
+              </div>
               <PillButton variant="primary" onClick={()=>setShowBio(true)}>
                 <Lock size={15}/> Sign & Save Report
               </PillButton>
@@ -1622,6 +1744,7 @@ export default function App() {
   const [bridgeSub,   setBridgeSub]   = useState('passage');
   const [deckLog,     setDeckLog]     = useState([]);
   const [nvgMode,     setNvgMode]     = useState(false);
+  const [showHelp,    setShowHelp]    = useState(false);
   const [loaded,      setLoaded]      = useState(false);
   const [scrolled,    setScrolled]    = useState(false);
   const [scrollH,     setScrollH]     = useState(0);
@@ -1736,14 +1859,14 @@ export default function App() {
           select option{background:#1A1B22;color:#fff}
         `}</style>
 
-        <div style={{width:'100%',maxWidth:390,height:'100vh',maxHeight:844,background:T.bg.canvas,borderRadius:44,border:'10px solid #000',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 40px 80px rgba(0,0,0,0.6)',animation:'fadeIn 0.5s ease-out',filter:nvgFilter,transition:'filter 0.4s ease'}}>
+        <div style={{width:'100%',maxWidth:390,height:'100vh',maxHeight:844,background:T.bg.canvas,borderRadius:44,border:'10px solid #000',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 40px 80px rgba(0,0,0,0.6)',animation:'fadeIn 0.5s ease-out',filter:nvgFilter,transition:'filter 0.4s ease',position:'relative'}}>
           {!currentUser?(
             <LoginScreen onLogin={handleLogin} vesselName={vessel.name}/>
           ):needsSetup?(
             <VesselSetup onComplete={handleSetupDone}/>
           ):(
             <>
-              <MobileStatusBar onLogout={handleLogout} onToggleNvg={()=>setNvgMode(m=>!m)} nvgMode={nvgMode} scrolled={scrolled}/>
+              <MobileStatusBar onLogout={handleLogout} onToggleNvg={()=>setNvgMode(m=>!m)} onOpenHelp={()=>setShowHelp(true)} nvgMode={nvgMode} scrolled={scrolled}/>
               <div ref={scrollRef} onScroll={handleScroll} style={{flex:1,minHeight:0,display:'flex',flexDirection:'column',overflowY:'auto',overflowX:'hidden',scrollbarWidth:'none',background:T.bg.canvas}}>
                 {currentUser.shell==='shore'&&<>
                   {activeTab==='market'&&<ErrorBoundary><ShoreMarketView/></ErrorBoundary>}
@@ -1764,6 +1887,7 @@ export default function App() {
               }
             </>
           )}
+          {showHelp&&currentUser&&<HelpPanel currentUser={currentUser} onClose={()=>setShowHelp(false)}/>}
         </div>
       </div>
     </AppCtx.Provider>
