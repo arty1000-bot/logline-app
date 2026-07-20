@@ -788,7 +788,8 @@ function BridgeViewWrapper() {
     Promise.all([
       fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height,swell_wave_height,sea_surface_temperature`).then(r=>r.json()),
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=wind_speed_10m,wind_direction_10m,surface_pressure,visibility&wind_speed_unit=kn`).then(r=>r.json()),
-    ]).then(([marine, atmo]) => {
+      fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`).then(r=>r.json()).catch(()=>null),
+    ]).then(([marine, atmo, geo]) => {
       setLiveWx({
         wave:      marine.current?.wave_height,
         swell:     marine.current?.swell_wave_height,
@@ -797,6 +798,7 @@ function BridgeViewWrapper() {
         windDir:   atmo.current?.wind_direction_10m,
         baro:      atmo.current?.surface_pressure,
         vis:       atmo.current?.visibility != null ? (atmo.current.visibility / 1000).toFixed(1) : null,
+        place:     geo?.locality || geo?.city || geo?.principalSubdivision || geo?.countryName || null,
       });
       setWxLoading(false);
     }).catch(() => setWxLoading(false));
@@ -931,7 +933,7 @@ function BridgeViewWrapper() {
             </div>
           )}
           <Card className="hover-card">
-            <CardHeader icon={Wind} title={`Environment · ${vessel.lat} ${vessel.lon}${liveWx?' · Live':''}`}/>
+            <CardHeader icon={Wind} title={`Environment · ${liveWx?.place || `${vessel.lat} ${vessel.lon}`}${liveWx?' · Live':''}`}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
               <Stat label="Wind"
                     value={liveWx?.windSpeed!=null ? `${degToCompass(liveWx.windDir)} ${Math.round(liveWx.windSpeed)}` : activePort.wind}
