@@ -1398,7 +1398,7 @@ function BridgeViewWrapper() {
           {/* Cargo grade summary */}
           <Card className="hover-card">
             <CardHeader icon={Droplets} title="Cargo Grade"/>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:12}}>
               <Stat label="Grade"       value={CARGO_GRADE.name}/>
               <Stat label="API Gravity" value={`${CARGO_GRADE.api}°`}/>
               <Stat label="Density"     value={`${CARGO_GRADE.density} t/m³`}/>
@@ -1476,7 +1476,7 @@ function BridgeViewWrapper() {
       )}
 
       {isSearch&&(
-        <div role="dialog" aria-modal="true" aria-label="Search Ports" style={{position:'absolute',inset:0,zIndex:100,background:T.bg.canvas,display:'flex',flexDirection:'column',transformOrigin:'bottom center',animation:'scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'}}>
+        <div role="dialog" aria-modal="true" aria-label="Search Ports" style={{position:'absolute',inset:0,zIndex:9999,background:T.bg.canvas,display:'flex',flexDirection:'column',transformOrigin:'bottom center',animation:'scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'}}>
           <div style={{padding:'20px',display:'flex',alignItems:'center',gap:14,background:T.bg.surface,flexShrink:0}}>
             <Search size={18} color={T.text.muted}/>
             <input autoFocus type="search" placeholder="Search port…" value={query} onChange={e=>setQuery(e.target.value)} aria-label="Search query" style={{flex:1,background:'transparent',color:T.text.main,outline:'none',fontSize:16,border:'none'}}/>
