@@ -41,7 +41,7 @@ const STRINGS = {
     // Bottom nav — shore
     navMarket:'Market', navFleet:'Fleet', navCarbon:'Carbon',
     // Sub-tabs
-    stPassage:'Passage', stWeather:'Weather', stLog:'Log',
+    stPassage:'Passage', stWeather:'Weather', stLog:'Log',  stCargo:'Cargo',
     stPlant:'Plant',    stAux:'Aux',
     stJobs:'Jobs',      stSchedule:'Schedule', stSpares:'Spares',
     stPsc:'PSC',        stGmdss:'GMDSS',       stNoon:'Noon', stMuster:'Muster',
@@ -60,7 +60,7 @@ const STRINGS = {
     // Bottom nav — shore
     navMarket:'Αγορά', navFleet:'Στόλος', navCarbon:'Άνθρακας',
     // Sub-tabs
-    stPassage:'Πλεύση',      stWeather:'Καιρός',    stLog:'Ημερολ.',
+    stPassage:'Πλεύση',      stWeather:'Καιρός',    stLog:'Ημερολ.',  stCargo:'Φορτίο',
     stPlant:'Μηχανή',        stAux:'Βοηθ.',
     stJobs:'Βλάβες',         stSchedule:'Πρόγραμμα', stSpares:'Ανταλλ.',
     stPsc:'PSC',             stGmdss:'GMDSS',        stNoon:'Μεσημβρία', stMuster:'Συναγ.',
@@ -97,6 +97,12 @@ const parseDeg = str => {
 const degToCompass = deg => {
   const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   return dirs[Math.round(deg / 22.5) % 16];
+};
+
+const waveToDouglas = h => {
+  if(h<0.10) return 0; if(h<0.50) return 1; if(h<1.25) return 2;
+  if(h<2.50) return 3; if(h<4.00) return 4; if(h<6.00) return 5;
+  if(h<9.00) return 6; if(h<14.0) return 7; return 8;
 };
 
 const PORT_COORDS = {
@@ -184,6 +190,17 @@ const CREW_CERTS = {
   15: [{type:'CoC — STCW III/1 (OOW Engine Room)',   issued:'2021-07-01',expires:'2026-07-01',status:'expired'},
        {type:'Medical Certificate (ML5)',             issued:'2024-09-01',expires:'2026-09-01',status:'expiring'},
        {type:'STCW Basic Safety Training',            issued:'2021-07-01',expires:'2026-07-01',status:'expired'}],
+  5:  [{type:'Able Seafarer Deck (STCW II/5)',        issued:'2022-03-15',expires:'2027-03-15',status:'valid'},
+       {type:'STCW Basic Safety Training (VI/1)',     issued:'2022-03-15',expires:'2027-03-15',status:'valid'},
+       {type:'Medical Certificate (ENG1)',             issued:'2024-08-20',expires:'2026-08-20',status:'expiring'},
+       {type:'Proficiency in Security Duties (VI/6)', issued:'2021-10-01',expires:'2026-10-01',status:'expired'}],
+  6:  [{type:'Able Seafarer Deck (STCW II/5)',        issued:'2023-05-20',expires:'2028-05-20',status:'valid'},
+       {type:'STCW Basic Safety Training (VI/1)',     issued:'2023-05-20',expires:'2028-05-20',status:'valid'},
+       {type:'Medical Certificate (ENG1)',             issued:'2024-10-15',expires:'2026-10-15',status:'expiring'},
+       {type:'Proficiency in Survival Craft (VI/2)',  issued:'2023-05-20',expires:'2028-05-20',status:'valid'}],
+  22: [{type:'STCW Medical Care (VI/4-2)',            issued:'2023-06-10',expires:'2028-06-10',status:'valid'},
+       {type:'Medical Certificate (ENG1)',             issued:'2025-01-15',expires:'2027-01-15',status:'valid'},
+       {type:'STCW Basic Safety Training (VI/1)',     issued:'2022-03-15',expires:'2027-03-15',status:'valid'}],
 };
 
 const REST_HOURS_7D = [
@@ -228,6 +245,16 @@ const PSC_SEED = [
   // ISM / Security
   {id:24,cat:'ISM/Security', item:'ISM – last internal audit within 12 months',                   done:true },
   {id:25,cat:'ISM/Security', item:'Ship Security Plan (SSP) verified, SSO designated',            done:true },
+  // Energy Efficiency (MARPOL Annex VI)
+  {id:26,cat:'Energy/MARPOL VI', item:'MARPOL Annex VI – EIAPP Certificate (engines)',            done:true },
+  {id:27,cat:'Energy/MARPOL VI', item:'SEEMP (Ship Energy Efficiency Mgmt Plan) — on board',     done:true },
+  {id:28,cat:'Energy/MARPOL VI', item:'CII Annual Reporting Record (previous year)',               done:true },
+  // Maritime Labour Convention (MLC 2006)
+  {id:29,cat:'MLC 2006', item:'DMLC Part I & II — valid and posted',                              done:true },
+  {id:30,cat:'MLC 2006', item:'SEA (Seafarers Employment Agreements) — current for all crew',     done:false},
+  // Navigation / Safety
+  {id:31,cat:'Navigation', item:'VDR Annual Performance Test Certificate — current',               done:true },
+  {id:32,cat:'Safety', item:'Anti-Fouling System Certificate (AFS 2001) — valid',                 done:true },
 ];
 
 const GMDSS_SEED = [
@@ -235,8 +262,8 @@ const GMDSS_SEED = [
   {id:2,item:'VHF DSC Controller (Ch 70)',    tested:true, freq:'Daily',  testedAt:'2026-07-23T07:16:00Z',testedBy:'Chen, W.'},
   {id:3,item:'NAVTEX Receiver (518 kHz)',     tested:true, freq:'Daily',  testedAt:'2026-07-23T07:20:00Z',testedBy:'Chen, W.'},
   {id:4,item:'INMARSAT-C – distress alert',   tested:true, freq:'Monthly',testedAt:'2026-07-01T08:00:00Z',testedBy:'Nair, S.'},
-  {id:5,item:'SART (2×) – battery & housing', tested:false,freq:'Monthly',testedAt:null,testedBy:null},
-  {id:6,item:'EPIRB – self-test function',    tested:false,freq:'Weekly', testedAt:null,testedBy:null},
+  {id:5,item:'SART (2×) – battery & housing', tested:false,freq:'Monthly',testedAt:null,testedBy:null, lastTestedAt:'2026-06-27T09:00:00Z',lastTestedBy:'Nair, S.'},
+  {id:6,item:'EPIRB – self-test function',    tested:false,freq:'Weekly', testedAt:null,testedBy:null, lastTestedAt:'2026-07-17T08:00:00Z',lastTestedBy:'Santos, J.'},
 ];
 
 const DEFECTS_SEED = [
@@ -268,10 +295,53 @@ const SCHEDULED_JOBS = [
 ];
 
 const SPARES_ROB = [
-  {id:1,part:'ME FW Cooler Gasket Set',    partNo:'MAN-5E-0321',  status:'on_order',eta:'Jeddah (4 days)'},
-  {id:2,part:'AE Fuel Injection Pump Kit', partNo:'MAK-FIP-6M',   status:'critical',eta:'ROB: 0 — Order now'},
-  {id:3,part:'Bow Thruster Shaft Seal',    partNo:'SKF-BT-SEAL-A',status:'on_order',eta:'Rotterdam ETA'},
-  {id:4,part:'EPIRB HRU Replacement',      partNo:'ACR-HRU-2026', status:'on_order',eta:'Singapore (10 days)'},
+  {id:1, part:'ME FW Cooler Gasket Set',          partNo:'MAN-5E-0321',    status:'on_order', eta:'Jeddah (4 days)'},
+  {id:2, part:'AE Fuel Injection Pump Kit (×2)',  partNo:'MAK-FIP-6M',     status:'critical', eta:'ROB: 0 — Order urgent'},
+  {id:3, part:'Bow Thruster Shaft Seal',           partNo:'SKF-BT-SEAL-A',  status:'on_order', eta:'Rotterdam ETA'},
+  {id:4, part:'EPIRB HRU Replacement',             partNo:'ACR-HRU-2026',   status:'on_order', eta:'Singapore (10 days)'},
+  {id:5, part:'ME Piston Crown — No.4 Cyl.',      partNo:'MAN-PC-4C-98',   status:'critical', eta:'ROB: 1 — Await liner assessment'},
+  {id:6, part:'OWS 15ppm Sensor/Cell Kit',         partNo:'JOWA-OWS-15P',   status:'on_order', eta:'Rotterdam ETA'},
+  {id:7, part:'Fire Damper BD-14 Actuator',        partNo:'NOVENCO-ACT-14', status:'on_order', eta:'Jeddah (4 days)'},
+  {id:8, part:'Lifeboat Davit Wire (Port)',         partNo:'SCHAT-DW-45M',   status:'on_order', eta:'Rotterdam ETA'},
+  {id:9, part:'ME Turbocharger Seal Kit',           partNo:'ABB-TCA66-SK',   status:'in_stock', eta:'On board'},
+  {id:10,part:'AE Cylinder Liner — AE2',            partNo:'MAK-CL-6M',      status:'in_stock', eta:'On board'},
+];
+
+const CARGO_GRADE = {
+  name:'Iranian Heavy Crude (IHC)',
+  api:27.4,
+  density:0.890,
+  loadPort:'Kharg Island, Iran',
+  blDate:'2026-07-09',
+  tempSetpoint:58,
+};
+
+const CARGO_TANKS = [
+  {id:1,  name:'No.1 CTR',  capCbm:36000, ullage:0.62, temp:58.2, pct:98.4, mt:31580, o2:2.1},
+  {id:2,  name:'No.2 CTR',  capCbm:36000, ullage:0.71, temp:57.9, pct:98.2, mt:31530, o2:2.4},
+  {id:3,  name:'No.3 CTR',  capCbm:37600, ullage:0.58, temp:58.5, pct:98.6, mt:33020, o2:2.0},
+  {id:4,  name:'No.4 CTR',  capCbm:36000, ullage:0.65, temp:57.4, pct:98.3, mt:31550, o2:2.2},
+  {id:5,  name:'No.5 CTR',  capCbm:36000, ullage:0.90, temp:57.1, pct:97.7, mt:31340, o2:2.6},
+  {id:6,  name:'No.1 PORT', capCbm:17500, ullage:0.55, temp:58.1, pct:96.8, mt:15100, o2:2.3},
+  {id:7,  name:'No.1 STBD', capCbm:17500, ullage:0.52, temp:58.0, pct:97.0, mt:15130, o2:2.1},
+  {id:8,  name:'No.2 PORT', capCbm:17500, ullage:0.68, temp:57.6, pct:96.0, mt:14960, o2:2.4},
+  {id:9,  name:'No.2 STBD', capCbm:17500, ullage:0.72, temp:57.3, pct:95.8, mt:14925, o2:2.5},
+  {id:10, name:'No.3 PORT', capCbm:17500, ullage:0.70, temp:57.2, pct:95.9, mt:14942, o2:2.3},
+  {id:11, name:'No.3 STBD', capCbm:17500, ullage:0.69, temp:57.5, pct:96.0, mt:14960, o2:2.2},
+  {id:12, name:'No.4 PORT', capCbm:17500, ullage:0.58, temp:57.0, pct:96.6, mt:15065, o2:2.4},
+  {id:13, name:'No.4 STBD', capCbm:17500, ullage:0.60, temp:57.2, pct:96.4, mt:15030, o2:2.5},
+  {id:14, name:'SLOP PORT', capCbm:5000,  ullage:2.84, temp:52.0, pct:45.2, mt: 2010, o2:3.8},
+  {id:15, name:'SLOP STBD', capCbm:5000,  ullage:3.10, temp:51.5, pct:39.8, mt: 1775, o2:3.9},
+];
+const CARGO_TOTAL_MT = CARGO_TANKS.reduce((s,t)=>s+t.mt,0);
+
+const IG_STATUS = {plant:'Running', blower:'Running', deckSeal:'Sealed', o2Outlet:2.4, pressureMMWG:1380, alarm:'None'};
+
+const DRILL_LOG_SEED = [
+  {id:1, type:'Abandon Ship Drill',       date:'2026-07-17', time:'14:00Z', duration:45, remarks:'Full muster in 12 min. Port lifeboat lowered to embarkation deck. Rescue boat engine tested. All crew accounted for.', officer:'Ivanov, M.'},
+  {id:2, type:'Fire Drill',               date:'2026-07-10', time:'10:00Z', duration:35, remarks:'Scenario: fire in cargo pump room. All fire teams responded. Fire damper BD-14 found sticking — defect logged (BD-14).', officer:'Santos, J.'},
+  {id:3, type:'Man Overboard Drill',      date:'2026-07-03', time:'15:30Z', duration:25, remarks:'MOB buoy deployed stbd. Williamson turn executed. Recovery time 8 min. All SOLAS LSA tested.', officer:'Chen, W.'},
+  {id:4, type:'Enclosed Space Entry',     date:'2026-06-26', time:'09:00Z', duration:20, remarks:'Entry into aft peak void. Gas test, standby crew, rescue line rigged. All permit-to-work procedures followed.', officer:'Santos, J.'},
 ];
 
 const ROLES = [
@@ -523,8 +593,8 @@ const VesselSetup = ({onComplete}) => {
         <div style={{animation:'fadeUp 0.5s ease-out 0.3s both'}}>
           <label style={{fontSize:12,fontWeight:600,color:T.text.muted,display:'flex',alignItems:'center',gap:6,margin:'0 0 7px'}}><MapPin size={13}/>Initial Position (e.g., 24°32.1N 057°18.4E)</label>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-            <input value={v.lat} onChange={e=>{setV(p=>({...p,lat:e.target.value}));setErr('');}} placeholder="24°32.1N" style={inp}/>
-            <input value={v.lon} onChange={e=>{setV(p=>({...p,lon:e.target.value}));setErr('');}} placeholder="057°18.4E" style={inp}/>
+            <input value={v.lat} onChange={e=>{setV(p=>({...p,lat:e.target.value}));setErr('');}} placeholder="24°32.1′N" style={inp}/>
+            <input value={v.lon} onChange={e=>{setV(p=>({...p,lon:e.target.value}));setErr('');}} placeholder="057°18.4′E" style={inp}/>
           </div>
         </div>
         {err&&<p style={{fontSize:12,color:T.accent.coral,margin:0}}>{err}</p>}
@@ -649,7 +719,7 @@ const BiometricModal = ({title,onSuccess,onCancel}) => {
 // ═══════════════════════════════════════════════════════
 const LOG_CATEGORIES = ['Position Report','Watch Handover','Engine Movement','Incident','Drill Record','Port Entry / Departure','Cargo Operation','Weather Observation','Other'];
 const DeckLogModal = ({onSave,onCancel}) => {
-  const {currentUser,vessel} = useApp();
+  const {currentUser,vessel,lang} = useApp();
   const [text,setText]         = useState('');
   const [category,setCategory] = useState('Position Report');
   const [listening,setListening] = useState(false);
@@ -667,7 +737,7 @@ const DeckLogModal = ({onSave,onCancel}) => {
     const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR) return;
     const r = new SR();
-    r.continuous = true; r.interimResults = false; r.lang='en-US';
+    r.continuous = true; r.interimResults = false; r.lang=lang==='el'?'el-GR':'en-US';
     r.onstart  = ()=>{ if(mountedRef.current) setListening(true); };
     r.onresult = e=>{ if(!mountedRef.current) return; const t=Array.from(e.results).map(r=>r[0].transcript).join(' '); setText(prev=>prev?prev+' '+t:t); };
     r.onerror  = ()=>{ if(mountedRef.current) setListening(false); };
@@ -842,6 +912,47 @@ const RerouteModal = ({fromPort,toPort,onConfirm,onCancel}) => {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+const HRA_CHECKS = [
+  'BMP5 (Best Management Practices) booklet on board and reviewed by Master.',
+  'Company Security Officer (CSO) notified of HRA transit. Armed escort / citadel readiness confirmed.',
+  'NAVAREA warnings checked. UKMTO and MSCHOA vessel movement report filed.',
+];
+const HraAcknowledgmentModal = ({port,onConfirm,onCancel}) => {
+  const [checks,setChecks] = useState([false,false,false]);
+  const allChecked = checks.every(Boolean);
+  return (
+    <div role="dialog" aria-modal="true" style={{position:'absolute',inset:0,zIndex:200,display:'flex',alignItems:'flex-end',animation:'backdropIn 0.3s ease-out forwards'}}>
+      <div style={{width:'100%',background:T.bg.surface,borderRadius:'32px 32px 0 0',padding:'28px 24px 40px',animation:'slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',maxHeight:'88vh',overflowY:'auto'}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+          <AlertTriangle size={16} color={T.accent.amber}/>
+          <span style={{fontSize:11,fontWeight:700,color:T.accent.amber,textTransform:'uppercase',letterSpacing:'0.1em'}}>High Risk Area Entry</span>
+        </div>
+        <h2 style={{fontSize:19,fontWeight:700,margin:'0 0 4px',color:T.text.vessel}}>{port.name}</h2>
+        <p style={{fontSize:13,color:T.text.muted,margin:'0 0 20px'}}>{port.country} · BMP5 acknowledgment required before proceeding</p>
+        <div style={{background:'rgba(255,176,23,0.06)',border:`1px solid rgba(255,176,23,0.25)`,borderRadius:T.radius.md,padding:'14px 16px',marginBottom:20}}>
+          <p style={{fontSize:12,color:T.accent.amber,lineHeight:1.6,margin:0}}>
+            This port is in or adjacent to a designated High Risk Area (HRA) for piracy/armed robbery. You are required to complete the BMP5 pre-entry checklist before setting this as your destination.
+          </p>
+        </div>
+        {HRA_CHECKS.map((text,i)=>(
+          <button key={i} onClick={()=>setChecks(c=>c.map((v,idx)=>idx===i?!v:v))} style={{width:'100%',background:checks[i]?T.accent.soft:T.bg.canvas,border:`1px solid ${checks[i]?T.accent.primary:T.bg.surfaceAlt}`,borderRadius:T.radius.md,padding:'14px',marginBottom:10,display:'flex',gap:12,alignItems:'flex-start',cursor:'pointer',textAlign:'left',transition:'all 0.2s'}}>
+            <div style={{width:20,height:20,borderRadius:6,border:`2px solid ${checks[i]?T.accent.primary:T.text.faint}`,background:checks[i]?T.accent.primary:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.2s',marginTop:1}}>
+              {checks[i]&&<Check size={12} color="#fff" style={{animation:'scaleIn 0.2s'}}/>}
+            </div>
+            <span style={{fontSize:13,color:T.text.main,lineHeight:1.5}}>{text}</span>
+          </button>
+        ))}
+        <div style={{display:'flex',gap:12,marginTop:8}}>
+          <button onClick={onCancel} style={{flex:1,background:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:T.text.main,fontSize:14,fontWeight:600,cursor:'pointer'}}>Cancel</button>
+          <button onClick={onConfirm} disabled={!allChecked} style={{flex:2,background:allChecked?T.accent.amber:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:allChecked?'#000':T.text.faint,fontSize:14,fontWeight:700,cursor:allChecked?'pointer':'not-allowed',transition:'all 0.2s'}}>
+            Acknowledge & Proceed →
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1055,6 +1166,7 @@ function BridgeViewWrapper() {
   const [showReroute, setShowReroute] = useState(false);
   const [rerouteDest, setRerouteDest] = useState(null);
   const [showLogModal,setShowLogModal]= useState(false);
+  const [hraPending,  setHraPending]  = useState(null);
   const [editPos,     setEditPos]     = useState(false);
   const [posErr,      setPosErr]      = useState('');
   const [tempLat,     setTempLat]     = useState(vessel.lat);
@@ -1093,7 +1205,7 @@ function BridgeViewWrapper() {
   const confirmReroute = ()   => { setActivePort(rerouteDest); setShowReroute(false); setRerouteDest(null); };
 
   const saveLogEntry = entry => {
-    setDeckLog(l=>[entry,...l]);
+    setDeckLog(l=>[{...entry, lat:vessel.lat, lon:vessel.lon, cog:'293°', sog:'13.4'},...l]);
     setShowLogModal(false);
   };
 
@@ -1113,7 +1225,7 @@ function BridgeViewWrapper() {
         </div>
       </header>
 
-      <SubTabs tabs={['passage','weather','log']} active={bridgeSub} setActive={setBridgeSub} labels={lang==='el'?{passage:STRINGS.el.stPassage,weather:STRINGS.el.stWeather,log:STRINGS.el.stLog}:{}}/>
+      <SubTabs tabs={['passage','weather','log','cargo']} active={bridgeSub} setActive={setBridgeSub} labels={lang==='el'?{passage:STRINGS.el.stPassage,weather:STRINGS.el.stWeather,log:STRINGS.el.stLog,cargo:STRINGS.el.stCargo}:{}}/>
 
       {bridgeSub==='passage'&&<>
         <div style={{height:180,borderRadius:T.radius.lg,overflow:'hidden',border:`1px solid ${T.bg.surfaceAlt}`}}>
@@ -1131,11 +1243,11 @@ function BridgeViewWrapper() {
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
               <div>
                 <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>Latitude</label>
-                <input value={tempLat} onChange={e=>setTempLat(e.target.value)} placeholder="24°32.1N" style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
+                <input value={tempLat} onChange={e=>setTempLat(e.target.value)} placeholder="24°32.1′N" style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
               </div>
               <div>
                 <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>Longitude</label>
-                <input value={tempLon} onChange={e=>setTempLon(e.target.value)} placeholder="057°18.4E" style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
+                <input value={tempLon} onChange={e=>setTempLon(e.target.value)} placeholder="057°18.4′E" style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
               </div>
             </div>
             {posErr&&<p style={{fontSize:12,color:T.accent.coral,margin:'0 0 10px'}}>{posErr}</p>}
@@ -1188,7 +1300,7 @@ function BridgeViewWrapper() {
                 <Stat label="ETA (UTC)"  value={getETA(activePort.etaDays)} unit="08:00Z"/>
                 <Stat label="Dist to Go" value={fmt(activePort.dist)} unit="NM"/>
                 <Stat label="SOG"        value="13.4" unit="kts" accent={T.accent.green}/>
-                <Stat label="COG"        value="312°"/>
+                <Stat label="COG"        value="293°"/>
               </div>
             )}
           </div>
@@ -1202,7 +1314,7 @@ function BridgeViewWrapper() {
           <div style={{textAlign:'left'}}>
             <p style={{color:T.text.main,fontWeight:700,fontSize:15,margin:0}}>Deck Log Entry</p>
             <p style={{color:T.text.muted,fontSize:12,fontWeight:500,margin:'3px 0 0'}}>
-              {deckLog.length > 0 ? `${deckLog.length} entr${deckLog.length===1?'y':'ies'} today` : 'Type or dictate a new entry'}
+              {(()=>{const n=deckLog.filter(e=>e.timestamp?.startsWith(utcDate())).length;return n>0?`${n} entr${n===1?'y':'ies'} today`:'Type or dictate a new entry';})()}
             </p>
           </div>
         </button>
@@ -1222,12 +1334,12 @@ function BridgeViewWrapper() {
               <Stat label="Wind"
                     value={liveWx?.windSpeed!=null ? `${degToCompass(liveWx.windDir)} ${Math.round(liveWx.windSpeed)}` : activePort.wind}
                     unit={liveWx?.windSpeed!=null ? 'kt' : undefined}/>
-              <Stat label="Sea Ht"
+              <Stat label={`Sea Ht · DS${liveWx?.wave!=null?waveToDouglas(liveWx.wave):3}`}
                     value={liveWx?.wave!=null ? liveWx.wave.toFixed(1) : '1.4'} unit="m"/>
-              <Stat label="Swell"
+              <Stat label="Swell Ht"
                     value={liveWx?.swell!=null ? liveWx.swell.toFixed(1) : activePort.swell} unit="m"/>
               <Stat label="Vis."
-                    value={liveWx?.vis!=null ? liveWx.vis : '8'} unit="NM"/>
+                    value={liveWx?.vis!=null ? liveWx.vis : '—'} unit={liveWx?.vis!=null?'NM':undefined}/>
               <Stat label="Sea Temp"
                     value={liveWx?.seaTemp!=null ? liveWx.seaTemp.toFixed(1) : '31'} unit="°C"/>
               <Stat label="Baro"
@@ -1239,10 +1351,12 @@ function BridgeViewWrapper() {
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
               <Stat label="SOG"       value="13.4" unit="kts" accent={T.accent.green}/>
               <Stat label="STW"       value="13.1" unit="kts"/>
+              <Stat label="COG"       value="293°"/>
+              <Stat label="Trim"      value="0.36 A"/>
               <Stat label="Fwd Draft" value="13.42" unit="m"/>
               <Stat label="Aft Draft" value="13.78" unit="m"/>
               <Stat label="GM (Loadicator)" value="1.84" unit="m" accent={T.accent.green}/>
-              <Stat label="Trim"      value="0.36 A"/>
+              <Stat label="Trim Corr."value="−0.05°"/>
             </div>
           </Card>
         </div>
@@ -1272,9 +1386,92 @@ function BridgeViewWrapper() {
                 </div>
                 <Badge label={entry.author} color={T.text.muted} bg={T.bg.surfaceAlt}/>
               </div>
+              {entry.lat&&<p style={{fontSize:10,fontFamily:'monospace',color:T.text.faint,margin:'0 0 6px'}}>{entry.lat} {entry.lon} · COG {entry.cog} · SOG {entry.sog} kt</p>}
               <p style={{fontSize:13,color:T.text.vessel,lineHeight:1.6,margin:0}}>{entry.text}</p>
             </Card>
           ))}
+        </div>
+      )}
+
+      {bridgeSub==='cargo'&&(
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {/* Cargo grade summary */}
+          <Card className="hover-card">
+            <CardHeader icon={Droplets} title="Cargo Grade"/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+              <Stat label="Grade"       value={CARGO_GRADE.name}/>
+              <Stat label="API Gravity" value={`${CARGO_GRADE.api}°`}/>
+              <Stat label="Density"     value={`${CARGO_GRADE.density} t/m³`}/>
+              <Stat label="Temp Setpt"  value={`${CARGO_GRADE.tempSetpoint}°C`}/>
+              <Stat label="Load Port"   value={CARGO_GRADE.loadPort}/>
+              <Stat label="B/L Date"    value={CARGO_GRADE.blDate}/>
+            </div>
+            <div style={{marginTop:12,padding:'10px 14px',background:T.bg.canvas,borderRadius:T.radius.sm,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{fontSize:11,fontWeight:600,color:T.text.muted,textTransform:'uppercase',letterSpacing:'0.06em'}}>Total on Board</span>
+              <span style={{fontFamily:'monospace',fontSize:18,fontWeight:800,color:T.accent.cyan}}>{CARGO_TOTAL_MT.toLocaleString()} MT</span>
+            </div>
+          </Card>
+
+          {/* Inert Gas System */}
+          <Card className="hover-card">
+            <CardHeader icon={Wind} title="Inert Gas System"/>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+              <Stat label="IG Plant"    value={IG_STATUS.plant}/>
+              <Stat label="IG Blower"   value={IG_STATUS.blower}/>
+              <Stat label="Deck Seal"   value={IG_STATUS.deckSeal}/>
+              <Stat label="Alarm"       value={IG_STATUS.alarm}/>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:10}}>
+              <div style={{padding:'10px 14px',background:IG_STATUS.o2Outlet<5?'rgba(0,229,143,0.08)':'rgba(255,90,95,0.08)',borderRadius:T.radius.sm,textAlign:'center'}}>
+                <p style={{fontSize:11,color:T.text.muted,fontWeight:600,margin:'0 0 4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>O₂ Outlet</p>
+                <p style={{fontFamily:'monospace',fontSize:20,fontWeight:800,color:IG_STATUS.o2Outlet<5?T.accent.green:T.accent.coral,margin:0}}>{IG_STATUS.o2Outlet}%</p>
+                <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0'}}>Limit: &lt;5%</p>
+              </div>
+              <div style={{padding:'10px 14px',background:'rgba(0,229,143,0.08)',borderRadius:T.radius.sm,textAlign:'center'}}>
+                <p style={{fontSize:11,color:T.text.muted,fontWeight:600,margin:'0 0 4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Deck Pressure</p>
+                <p style={{fontFamily:'monospace',fontSize:20,fontWeight:800,color:T.accent.green,margin:0}}>{IG_STATUS.pressureMMWG}</p>
+                <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0'}}>mmWG (positive)</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Tank table */}
+          <Card className="hover-card" style={{padding:0}}>
+            <div style={{padding:'14px 16px 10px',borderBottom:`1px solid ${T.bg.canvas}`}}>
+              <CardHeader icon={BarChart2} title="Cargo Tank Status"/>
+            </div>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+                <thead>
+                  <tr style={{background:T.bg.canvas}}>
+                    {['Tank','Ullage (m)','Temp °C','Fill %','MT','O₂ %'].map(h=>(
+                      <th key={h} style={{padding:'8px 10px',textAlign:'right',fontSize:10,fontWeight:700,color:T.text.muted,textTransform:'uppercase',letterSpacing:'0.05em',whiteSpace:'nowrap'}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {CARGO_TANKS.map((tk,i)=>{
+                    const igOk = tk.o2<5;
+                    return (
+                      <tr key={tk.id} style={{borderBottom:`1px solid ${T.bg.canvas}`,background:i%2===0?T.bg.surface:T.bg.surfaceAlt}}>
+                        <td style={{padding:'8px 10px',fontWeight:700,color:tk.name.startsWith('SLOP')?T.accent.amber:T.text.vessel,whiteSpace:'nowrap',textAlign:'right'}}>{tk.name}</td>
+                        <td style={{padding:'8px 10px',fontFamily:'monospace',color:T.text.muted,textAlign:'right'}}>{tk.ullage.toFixed(2)}</td>
+                        <td style={{padding:'8px 10px',fontFamily:'monospace',color:T.text.muted,textAlign:'right'}}>{tk.temp.toFixed(1)}</td>
+                        <td style={{padding:'8px 10px',fontFamily:'monospace',color:T.accent.cyan,textAlign:'right'}}>{tk.pct.toFixed(1)}</td>
+                        <td style={{padding:'8px 10px',fontFamily:'monospace',fontWeight:700,color:T.text.vessel,textAlign:'right'}}>{tk.mt.toLocaleString()}</td>
+                        <td style={{padding:'8px 10px',fontFamily:'monospace',color:igOk?T.accent.green:T.accent.coral,fontWeight:igOk?400:700,textAlign:'right'}}>{tk.o2.toFixed(1)}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr style={{background:T.bg.canvas,fontWeight:700}}>
+                    <td colSpan={4} style={{padding:'10px 10px',color:T.text.muted,fontSize:11,textTransform:'uppercase',letterSpacing:'0.05em',textAlign:'right'}}>Total</td>
+                    <td style={{padding:'10px 10px',fontFamily:'monospace',fontSize:13,fontWeight:800,color:T.accent.cyan,textAlign:'right'}}>{CARGO_TOTAL_MT.toLocaleString()}</td>
+                    <td style={{padding:'10px 10px',fontFamily:'monospace',color:T.text.muted,textAlign:'right'}}>—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </div>
       )}
 
@@ -1289,6 +1486,7 @@ function BridgeViewWrapper() {
             {filtered.map((port,i)=>(
               <button key={port.id} onClick={()=>{
                 if(port.blocked){triggerReroute(port);}
+                else if(port.hra){setHraPending(port);}
                 else{setActivePort(port);}
                 setIsSearch(false);setQuery('');
               }} className="hover-card" style={{width:'100%',background:T.bg.surface,borderRadius:T.radius.md,padding:'18px',marginBottom:10,display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer',textAlign:'left',border:'1px solid transparent',animation:`fadeUp 0.3s ease-out ${i*0.05}s both`}}>
@@ -1310,20 +1508,43 @@ function BridgeViewWrapper() {
       {showLogModal&&(
         <DeckLogModal onSave={saveLogEntry} onCancel={()=>setShowLogModal(false)}/>
       )}
+      {hraPending&&(
+        <HraAcknowledgmentModal port={hraPending} onConfirm={()=>{setActivePort(hraPending);setHraPending(null);}} onCancel={()=>setHraPending(null)}/>
+      )}
     </main>
   );
 }
 
 // ── ENGINE ───────────────────────────────────────────────
 const EngineView = () => {
-  const {scrollH,lang} = useApp();
+  const {scrollH,lang,defects} = useApp();
   const [engSub,setEngSub] = useState('plant');
+  const engDefects = defects.filter(d=>(d.system==='Main Engine'||d.system==='Engine Room')&&d.status!=='closed');
   return (
     <main aria-label="Engine" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Μηχανοστάσιο':'Engine Room'}</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>{lang==='el'?'Κατάσταση μηχανών & βοηθητικών':'Plant status & auxiliaries'}</p>
       </header>
+      {engDefects.length>0&&(
+        <Card style={{background:'rgba(255,90,95,0.06)',border:`1px solid rgba(255,90,95,0.3)`,gap:10}}>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <AlertTriangle size={13} color={T.accent.coral}/>
+            <span style={{fontSize:11,fontWeight:700,color:T.accent.coral,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+              {engDefects.length} Active Engine Defect{engDefects.length>1?'s':''}
+            </span>
+          </div>
+          {engDefects.map(d=>(
+            <div key={d.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',paddingTop:8,borderTop:`1px solid rgba(255,90,95,0.15)`,gap:8}}>
+              <div style={{flex:1}}>
+                <p style={{fontSize:12,fontWeight:700,color:T.text.vessel,margin:0}}>{d.component}</p>
+                <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0',lineHeight:1.4}}>{d.desc.length>80?d.desc.slice(0,80)+'…':d.desc}</p>
+              </div>
+              <PriorityBadge p={d.priority}/>
+            </div>
+          ))}
+        </Card>
+      )}
       <SubTabs tabs={['plant','aux']} active={engSub} setActive={setEngSub} labels={lang==='el'?{plant:STRINGS.el.stPlant,aux:STRINGS.el.stAux}:{}}/>
       {engSub==='plant'&&(
         <div style={{display:'flex',flexDirection:'column',gap:18}}>
@@ -1339,12 +1560,12 @@ const EngineView = () => {
           <Card className="hover-card">
             <CardHeader icon={Zap} title="Main Engine"/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-              <Stat label="Shaft RPM"    value="84.2"/>
-              <Stat label="ME Load"      value="82%"  accent={T.accent.green}/>
-              <Stat label="Exhaust Temp" value="318"  unit="°C"/>
-              <Stat label="Scav Air Pr"  value="3.2"  unit="bar"/>
-              <Stat label="FW Temp In"   value="82"   unit="°C"/>
-              <Stat label="LO Pressure"  value="5.8"  unit="bar" accent={T.accent.green}/>
+              <Stat label="Shaft RPM"       value="84.2"/>
+              <Stat label="ME Load"         value="82%"  accent={T.accent.green}/>
+              <Stat label="Avg Exhaust Temp"value="318"  unit="°C"/>
+              <Stat label="Scav Air Pr"     value="3.2"  unit="bar"/>
+              <Stat label="HT FW Temp Out"  value="82"   unit="°C"/>
+              <Stat label="LO Pressure"     value="5.8"  unit="bar" accent={T.accent.green}/>
             </div>
           </Card>
         </div>
@@ -1352,16 +1573,21 @@ const EngineView = () => {
       {engSub==='aux'&&(
         <div style={{display:'flex',flexDirection:'column',gap:18}}>
           <Card className="hover-card">
-            <CardHeader icon={Settings} title="Auxiliary Engines"/>
+            <CardHeader icon={Settings} title="Auxiliary Engines (rated 1,050 kW each)"/>
             <div style={{display:'flex',flexDirection:'column',gap:0}}>
-              {[{n:'AE 1',load:'68%',rpm:'720',status:'Running',ok:true},{n:'AE 2',load:'72%',rpm:'720',status:'Running',ok:true},{n:'AE 3',load:'0%',rpm:'0',status:'Standby',ok:false}].map((ae,i)=>(
-                <div key={i} style={{display:'grid',gridTemplateColumns:'40px 1fr 1fr 90px',gap:10,padding:'13px 0',borderBottom:i<2?`1px solid ${T.bg.canvas}`:'none',alignItems:'center',animation:`fadeUp 0.4s ease-out ${i*0.05}s both`}}>
+              {[{n:'AE 1',load:'68%',kw:714,rpm:'720',status:'Running',ok:true},{n:'AE 2',load:'72%',kw:756,rpm:'720',status:'Running',ok:true},{n:'AE 3',load:'0%',kw:0,rpm:'0',status:'Standby',ok:false}].map((ae,i)=>(
+                <div key={i} style={{display:'grid',gridTemplateColumns:'40px 1fr 1fr 1fr 90px',gap:8,padding:'13px 0',borderBottom:i<2?`1px solid ${T.bg.canvas}`:'none',alignItems:'center',animation:`fadeUp 0.4s ease-out ${i*0.05}s both`}}>
                   <span style={{fontSize:13,fontWeight:700,color:T.text.vessel}}>{ae.n}</span>
                   <span style={{fontFamily:'monospace',fontSize:12,color:T.text.muted}}>{ae.rpm} RPM</span>
                   <span style={{fontFamily:'monospace',fontSize:12,color:ae.ok?T.accent.green:T.text.muted}}>Load {ae.load}</span>
+                  <span style={{fontFamily:'monospace',fontSize:12,color:ae.ok?T.accent.green:T.text.faint}}>{ae.ok?`${ae.kw} kW`:'—'}</span>
                   <Badge label={ae.status} color={ae.ok?T.accent.green:T.text.muted} bg={ae.ok?'rgba(0,229,143,0.1)':T.bg.surfaceAlt}/>
                 </div>
               ))}
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:6,paddingTop:4,borderTop:`1px solid ${T.bg.canvas}`}}>
+              <CheckCircle2 size={12} color={T.accent.green}/>
+              <span style={{fontSize:11,color:T.accent.green,fontWeight:600}}>No active AE alarms</span>
             </div>
           </Card>
           <Card className="hover-card">
@@ -1465,8 +1691,8 @@ const CrewView = () => {
                     <p style={{fontSize:10,color:T.text.muted,margin:'1px 0 0'}}>{row.rank}</p>
                   </div>
                   {row.hours.map((h,j)=>(
-                    <div key={j} style={{width:28,height:28,borderRadius:8,background:h<10?'rgba(255,90,95,0.2)':h<=10?'rgba(255,176,23,0.15)':T.bg.canvas,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      <span style={{fontSize:10,fontWeight:700,fontFamily:'monospace',color:h<10?T.accent.coral:h<=10?T.accent.amber:T.text.muted}}>{h}</span>
+                    <div key={j} style={{width:28,height:28,borderRadius:8,background:h<10?'rgba(255,90,95,0.2)':T.bg.canvas,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <span style={{fontSize:10,fontWeight:700,fontFamily:'monospace',color:h<10?T.accent.coral:h===10?T.accent.amber:T.text.muted}}>{h}</span>
                     </div>
                   ))}
                   <div style={{textAlign:'center'}}>
@@ -1549,7 +1775,7 @@ const MaintenanceView = () => {
     if(defListening){ defRecRef.current?.stop(); return; }
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR) return;
-    const r=new SR(); r.continuous=true; r.interimResults=false; r.lang='en-US';
+    const r=new SR(); r.continuous=true; r.interimResults=false; r.lang=lang==='el'?'el-GR':'en-US';
     r.onstart=()=>{ if(defMounted.current) setDefListening(true); };
     r.onresult=e=>{ if(!defMounted.current) return; const t=Array.from(e.results).map(r=>r[0].transcript).join(' '); setNewDef(f=>({...f,desc:f.desc?f.desc+' '+t:t})); };
     r.onerror=()=>{ if(defMounted.current) setDefListening(false); };
@@ -1732,10 +1958,10 @@ const MaintenanceView = () => {
 
 // ── OPS ────────────────────────────────────────────────────
 const OpsView = () => {
-  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,currentUser,scrollH,lang} = useApp();
+  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,noonData,setNoonData,musterRoll,setMusterRoll,currentUser,scrollH,lang} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
-  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',avgSpeed:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meHours:'',etaNext:'',voyageNo:'',remarks:''});
+  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',robLsmgo:'',avgSpeed:'',cog:'',baro:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meHours:'',etaNext:'',voyageNo:'',remarks:''});
   const [liveTime, setLiveTime] = useState(utcTime());
   useEffect(()=>{ const id=setInterval(()=>setLiveTime(utcTime()),1000); return()=>clearInterval(id); },[]);
   const [noonListening, setNoonListening] = useState(false);
@@ -1750,7 +1976,7 @@ const OpsView = () => {
     if(noonListening){ noonRecRef.current?.stop(); return; }
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR) return;
-    const r=new SR(); r.continuous=true; r.interimResults=false; r.lang='en-US';
+    const r=new SR(); r.continuous=true; r.interimResults=false; r.lang=lang==='el'?'el-GR':'en-US';
     r.onstart=()=>{ if(noonMounted.current) setNoonListening(true); };
     r.onresult=e=>{ if(!noonMounted.current) return; const t=Array.from(e.results).map(r=>r[0].transcript).join(' '); setNoonForm(f=>({...f,remarks:f.remarks?f.remarks+' '+t:t})); };
     r.onerror=()=>{ if(noonMounted.current) setNoonListening(false); };
@@ -1759,7 +1985,13 @@ const OpsView = () => {
   };
 
   const pscDone   = pscItems.filter(x=>x.done).length;
-  const togglePsc = id => setPscItems(items=>items.map(item=>item.id===id?{...item,done:!item.done}:item));
+  const togglePsc = id => setPscItems(items=>items.map(item=>{
+    if(item.id!==id) return item;
+    const nowDone = !item.done;
+    return nowDone
+      ? {...item,done:true,  verifiedAt:utcNow(), verifiedBy:currentUser?.label||'Officer'}
+      : {...item,done:false, verifiedAt:null,     verifiedBy:null};
+  }));
   const logGmdss  = id => setGmdssItems(items=>items.map(item=>item.id===id?{...item,tested:true,testedAt:utcNow(),testedBy:currentUser?.label||'Officer'}:item));
 
   return (
@@ -1789,6 +2021,9 @@ const OpsView = () => {
               <div style={{flex:1}}>
                 <span style={{fontSize:13,fontWeight:600,color:item.done?T.text.muted:T.text.main,textDecoration:item.done?'line-through':'none',display:'block',lineHeight:1.4}}>{item.item}</span>
                 <span style={{fontSize:11,color:T.text.faint}}>{item.cat}</span>
+                {item.done&&item.verifiedAt&&(
+                  <span style={{fontSize:10,fontFamily:'monospace',color:T.accent.green,display:'block',marginTop:3}}>{utcFull(item.verifiedAt)} · {item.verifiedBy}</span>
+                )}
               </div>
             </button>
           ))}
@@ -1811,6 +2046,12 @@ const OpsView = () => {
                   <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(item.testedAt)} · {item.testedBy}</p>
                 </div>
               )}
+              {!item.tested&&item.lastTestedAt&&(
+                <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'8px 12px',marginBottom:8}}>
+                  <p style={{fontSize:10,fontWeight:600,color:T.text.faint,margin:'0 0 2px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Previous Test</p>
+                  <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(item.lastTestedAt)} · {item.lastTestedBy}</p>
+                </div>
+              )}
               {!item.tested&&(
                 <button onClick={()=>logGmdss(item.id)} style={{background:T.accent.primary,border:'none',borderRadius:T.radius.pill,padding:'11px',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',width:'100%'}}>
                   Log Test — {liveTime}
@@ -1824,11 +2065,45 @@ const OpsView = () => {
       {opsSub==='noon'&&(
         <div style={{display:'flex',flexDirection:'column',gap:14,animation:'fadeUp 0.4s ease-out'}}>
           {noonLogged?(
-            <Card style={{textAlign:'center',padding:'40px 20px'}}>
-              <CheckCircle2 size={44} color={T.accent.green} style={{margin:'0 auto 14px'}}/>
-              <p style={{fontSize:15,fontWeight:700,color:T.text.vessel,margin:'0 0 6px'}}>Noon Report Signed</p>
-              <p style={{fontSize:12,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcDate()} · Biometric verified · Pending fleet sync</p>
-            </Card>
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              <Card style={{textAlign:'center',padding:'32px 20px 20px'}}>
+                <CheckCircle2 size={44} color={T.accent.green} style={{margin:'0 auto 12px'}}/>
+                <p style={{fontSize:15,fontWeight:700,color:T.text.vessel,margin:'0 0 4px'}}>Noon Report Signed</p>
+                <p style={{fontSize:12,fontFamily:'monospace',color:T.text.muted,margin:'0 0 16px'}}>{utcDate()} · {noonData?.signedBy||currentUser?.label||'Master'} · Biometric verified</p>
+                {noonData&&(
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,textAlign:'left'}}>
+                    {[
+                      ['Voyage No.',noonData.voyageNo],
+                      ['Position',noonData.lat&&noonData.lon?`${noonData.lat} / ${noonData.lon}`:'—'],
+                      ['Dist Run',noonData.distRun?`${noonData.distRun} NM`:'—'],
+                      ['Dist to Go',noonData.distToGo?`${noonData.distToGo} NM`:'—'],
+                      ['Avg Speed',noonData.avgSpeed?`${noonData.avgSpeed} kt`:'—'],
+                      ['COG',noonData.cog||'—'],
+                      ['Baro',noonData.baro?`${noonData.baro} hPa`:'—'],
+                      ['ME Consump',noonData.meConsump?`${noonData.meConsump} MT`:'—'],
+                      ['ROB VLSFO',noonData.rob?`${noonData.rob} MT`:'—'],
+                      ['ROB LSMGO',noonData.robLsmgo?`${noonData.robLsmgo} MT`:'—'],
+                      ['Cargo OB',noonData.cargoOb?`${noonData.cargoOb} MT`:'—'],
+                      ['ETA Next',noonData.etaNext||'—'],
+                    ].map(([l,v])=>v&&v!=='—'?(
+                      <div key={l} style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'8px 10px'}}>
+                        <p style={{fontSize:10,color:T.text.faint,margin:'0 0 2px',textTransform:'uppercase',letterSpacing:'0.05em'}}>{l}</p>
+                        <p style={{fontSize:12,fontWeight:600,color:T.text.vessel,margin:0,fontFamily:'monospace'}}>{v}</p>
+                      </div>
+                    ):null)}
+                  </div>
+                )}
+                {noonData?.remarks&&(
+                  <div style={{marginTop:10,textAlign:'left',background:T.bg.canvas,borderRadius:T.radius.sm,padding:'10px 12px'}}>
+                    <p style={{fontSize:10,color:T.text.faint,margin:'0 0 4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Remarks</p>
+                    <p style={{fontSize:12,color:T.text.muted,margin:0,lineHeight:1.5}}>{noonData.remarks}</p>
+                  </div>
+                )}
+              </Card>
+              <PillButton variant="secondary" onClick={()=>{ setNoonLogged(false); setNoonData(null); if(noonData) setNoonForm({...noonData}); }}>
+                Amend Report
+              </PillButton>
+            </div>
           ):(
             <>
               <Card>
@@ -1854,9 +2129,11 @@ const OpsView = () => {
                 </div>
                 <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Weather & Sea State</p>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-                  {[{k:'windBft',l:'Wind (Beaufort)',ph:'5'},
+                  {[{k:'cog',    l:'COG (°T)',          ph:'293'},
+                    {k:'baro',   l:'Barometer (hPa)',   ph:'1012'},
+                    {k:'windBft',l:'Wind (Beaufort)',    ph:'5'},
                     {k:'seaState',l:'Sea State (Douglas)',ph:'3'},
-                    {k:'swellDir',l:'Swell Direction',ph:'NW'},
+                    {k:'swellDir',l:'Swell Direction',  ph:'NW'},
                     {k:'etaNext',l:'ETA Next Port (UTC)',ph:'2026-08-06 08:00'}
                   ].map(({k,l,ph})=>(
                     <div key={k}>
@@ -1867,10 +2144,11 @@ const OpsView = () => {
                 </div>
                 <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Fuel & Cargo</p>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-                  {[{k:'meConsump',l:'ME Consump (MT)',ph:'42.1'},
-                    {k:'rob',l:'ROB VLSFO (MT)',ph:'1,842'},
-                    {k:'meHours',l:'ME Hours (24h)',ph:'24.0'},
-                    {k:'cargoOb',l:'Cargo on Board (MT)',ph:'298,450'}
+                  {[{k:'meConsump',l:'ME Consump (MT)',    ph:'42.1'},
+                    {k:'rob',    l:'ROB VLSFO (MT)',      ph:'1,842'},
+                    {k:'robLsmgo',l:'ROB LSMGO (MT)',     ph:'224'},
+                    {k:'meHours',l:'ME Hours (24h)',       ph:'24.0'},
+                    {k:'cargoOb',l:'Cargo on Board (MT)', ph:'282,917'}
                   ].map(({k,l,ph})=>(
                     <div key={k}>
                       <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>{l}</label>
@@ -1897,7 +2175,11 @@ const OpsView = () => {
             </>
           )}
           {showBio&&(
-            <BiometricModal title="Sign Noon Report" onSuccess={()=>{setNoonLogged(true);setShowBio(false);}} onCancel={()=>setShowBio(false)}/>
+            <BiometricModal title="Sign Noon Report" onSuccess={()=>{
+              setNoonData({...noonForm,signedAt:utcNow(),signedBy:currentUser?.label||'Master'});
+              setNoonLogged(true);
+              setShowBio(false);
+            }} onCancel={()=>setShowBio(false)}/>
           )}
         </div>
       )}
@@ -1913,19 +2195,55 @@ const OpsView = () => {
               </Card>
             ))}
           </div>
+          {(()=>{
+            const presentCount = FULL_CREW.filter(c=>musterRoll[c.id]!=='ABSENT').length;
+            const absentCount  = FULL_CREW.length - presentCount;
+            return (
+              <Card>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                  <CardHeader icon={Users} title={`Muster List — ${FULL_CREW.length} POB`}/>
+                  <div style={{display:'flex',gap:8}}>
+                    <Badge label={`${presentCount} PRESENT`} color={T.accent.green} bg="rgba(0,229,143,0.1)"/>
+                    {absentCount>0&&<Badge label={`${absentCount} ABSENT`} color={T.accent.coral} bg="rgba(255,90,95,0.1)"/>}
+                  </div>
+                </div>
+                {FULL_CREW.map((c,i)=>{
+                  const status = musterRoll[c.id]==='ABSENT'?'ABSENT':'PRESENT';
+                  return (
+                    <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:i<FULL_CREW.length-1?`1px solid ${T.bg.canvas}`:'none'}}>
+                      <div style={{flex:1}}>
+                        <p style={{fontSize:13,fontWeight:600,margin:0,color:status==='ABSENT'?T.accent.coral:T.text.vessel}}>{c.name}</p>
+                        <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
+                        <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0',fontStyle:'italic'}}>{c.duty} · {c.lsa}</p>
+                      </div>
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,flexShrink:0}}>
+                        <Badge label={`STN ${c.station}`} color={c.station==='A'?T.accent.primary:T.accent.cyan} bg={c.station==='A'?'rgba(82,78,250,0.15)':'rgba(18,212,255,0.12)'}/>
+                        <button onClick={()=>setMusterRoll(r=>({...r,[c.id]:status==='PRESENT'?'ABSENT':'PRESENT'}))}
+                          style={{background:status==='ABSENT'?'rgba(255,90,95,0.12)':'rgba(0,229,143,0.1)',border:`1px solid ${status==='ABSENT'?T.accent.coral:T.accent.green}44`,borderRadius:T.radius.pill,padding:'4px 10px',fontSize:10,fontWeight:700,color:status==='ABSENT'?T.accent.coral:T.accent.green,cursor:'pointer',transition:'all 0.2s'}}>
+                          {status}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </Card>
+            );
+          })()}
+
+          {/* Drill Log */}
           <Card>
-            <CardHeader icon={Users} title={`Muster List — ${FULL_CREW.length} POB`}/>
-            {FULL_CREW.map((c,i)=>(
-              <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:i<FULL_CREW.length-1?`1px solid ${T.bg.canvas}`:'none'}}>
-                <div style={{flex:1}}>
-                  <p style={{fontSize:13,fontWeight:600,margin:0,color:T.text.vessel}}>{c.name}</p>
-                  <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
-                  <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0',fontStyle:'italic'}}>{c.duty} · {c.lsa}</p>
+            <CardHeader icon={ClipboardList} title="Drill Log (Last 4 Drills)"/>
+            {DRILL_LOG_SEED.map((drill,i)=>(
+              <div key={drill.id} style={{paddingTop:i===0?0:14,marginTop:i===0?0:14,borderTop:i===0?'none':`1px solid ${T.bg.canvas}`}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                  <span style={{fontSize:13,fontWeight:700,color:T.text.vessel}}>{drill.type}</span>
+                  <span style={{fontSize:11,fontFamily:'monospace',color:T.accent.cyan}}>{drill.date} {drill.time}</span>
                 </div>
-                <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4,flexShrink:0}}>
-                  <Badge label={`STN ${c.station}`} color={c.station==='A'?T.accent.primary:T.accent.cyan} bg={c.station==='A'?'rgba(82,78,250,0.15)':'rgba(18,212,255,0.12)'}/>
-                  <Badge label="ON BOARD" color={T.accent.green} bg="rgba(0,229,143,0.1)"/>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                  <span style={{fontSize:11,color:T.text.muted}}>Duration: {drill.duration} min</span>
+                  <span style={{fontSize:11,color:T.text.faint}}>{drill.officer}</span>
                 </div>
+                <p style={{fontSize:12,color:T.text.muted,lineHeight:1.5,margin:0}}>{drill.remarks}</p>
               </div>
             ))}
           </Card>
@@ -1939,7 +2257,11 @@ const OpsView = () => {
 const ShoreMarketView = () => {
   const {activePort,scrollH}=useApp();
   const isHRA=hraActive(activePort);
-  const markets=[{name:'Baltic Dry (BDI)',val:'1,842',chg:'+24',up:true},{name:'VLCC (AG–FEast)',val:'$44.2k',chg:'+$1.2k',up:true},{name:'VLSFO Singapore',val:'$648/mt',chg:'+$8',up:true}];
+  const markets=[
+    {name:'BDTI (Baltic Dirty Tanker Index)',val:'1,124',chg:'+18',up:true},
+    {name:'TD3C VLCC (AG–FE) TCE',          val:'$44.2k/day',chg:'+$1.2k',up:true},
+    {name:'VLSFO Singapore',                 val:'$648/mt',chg:'+$8',up:true},
+  ];
   const fixtures=[
     {route:'AG → Rotterdam',type:'VLCC',rate:'$44,000/day',cargo:'Crude Oil'},
     {route:'W. Africa → Med',type:'Suezmax',rate:'$28,500/day',cargo:'Crude Oil'},
@@ -2019,8 +2341,8 @@ const FleetView = () => {
   const {scrollH}=useApp();
   const vessels=[
     {name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden',dest:'Rotterdam',eta:'Jul 14',speed:'13.2 kn',hra:true},
-    {name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'At Anchor',dest:'Singapore',eta:'Jul 08',speed:'0.0 kn',hra:false},
-    {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:'Arrived',speed:'0.0 kn',hra:false},
+    {name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'Waiting Orders',dest:'Singapore',eta:'Anchored 23 Jul',speed:'0.0 kn',hra:false},
+    {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:'Berthed 22 Jul',speed:'0.0 kn',hra:false},
   ];
   return (
     <main aria-label="Fleet" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
@@ -2057,8 +2379,8 @@ const CarbonView = () => {
   const {activePort,scrollH}=useApp();
   const cii=ciiFor(activePort);
   const isRed=activePort?.blocked;
-  const cii2={score:'3.21',rating:'B',target:'4.00',dailyCO2:18.4,note:'On track. Slow-steam approach to Singapore recommended.'};
-  const totalETS=Math.round(cii.dailyCO2*74)+Math.round(cii2.dailyCO2*74);
+  const cii2={score:'3.21',rating:'B',target:'4.00',dailyCO2:18.4,euEts:false,note:'On track. Waiting orders at Singapore anchorage — EU ETS not applicable (non-EU voyage).'};
+  const totalETS=Math.round(cii.dailyCO2*74); // Pacific Star: non-EU voyage, ETS N/A
   return (
     <main aria-label="Carbon" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
       <header>
@@ -2083,9 +2405,13 @@ const CarbonView = () => {
         <div style={{display:'flex',alignItems:'center',gap:8}}><Leaf size={16} color={T.accent.green}/><span style={{fontSize:13,fontWeight:700,color:T.accent.green}}>MT Pacific Star</span></div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
           <Stat label="CII Score"    value={cii2.score} accent={T.accent.green}/>
-          <Stat label="EU ETS Daily" value={fmtUSD(Math.round(cii2.dailyCO2*74))} accent={T.accent.green}/>
+          <Stat label="EU ETS Daily" value="N/A" accent={T.text.faint}/>
           <Stat label="CII Rating"   value={cii2.rating} accent={T.accent.green}/>
           <Stat label="Target Score" value={cii2.target}/>
+        </div>
+        <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'8px 12px',display:'flex',gap:8,alignItems:'flex-start'}}>
+          <Info size={12} color={T.text.faint} style={{flexShrink:0,marginTop:1}}/>
+          <span style={{fontSize:11,color:T.text.faint,lineHeight:1.5}}>EU ETS not applicable — vessel on non-EU voyage (Singapore anchorage).</span>
         </div>
         <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'12px 14px',display:'flex',alignItems:'flex-start',gap:10,marginTop:2}}>
           <TrendingDown size={14} color={T.accent.green} style={{flexShrink:0,marginTop:1}}/>
@@ -2093,7 +2419,7 @@ const CarbonView = () => {
         </div>
       </Card>
       <div style={{background:T.bg.surface,borderRadius:T.radius.md,padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <span style={{fontSize:13,color:T.text.muted,fontWeight:600}}>Fleet EU ETS Today</span>
+        <span style={{fontSize:13,color:T.text.muted,fontWeight:600}}>Fleet EU ETS Today (EU voyages only)</span>
         <span style={{fontFamily:'monospace',fontSize:16,fontWeight:700,color:T.accent.amber}}>{fmtUSD(totalETS)}</span>
       </div>
       <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
@@ -2117,6 +2443,8 @@ export default function App() {
   const [pscItems,    setPscItems]    = useState(PSC_SEED);
   const [gmdssItems,  setGmdssItems]  = useState(GMDSS_SEED);
   const [noonLogged,  setNoonLogged]  = useState(false);
+  const [noonData,    setNoonData]    = useState(null);
+  const [musterRoll,  setMusterRoll]  = useState({});
   const [bridgeSub,   setBridgeSub]   = useState('passage');
   const [deckLog,     setDeckLog]     = useState([]);
   const [nvgMode,     setNvgMode]     = useState(false);
@@ -2153,6 +2481,8 @@ export default function App() {
         const p    = store.get('pscItems');
         const g    = store.get('gmdssItems');
         const n    = store.get('noonLogged');
+        const nd   = store.get('noonData');
+        const mr   = store.get('musterRoll');
         const port = store.get('activePort');
         const dl   = store.get('deckLog');
         const nvg  = store.get('nvgMode');
@@ -2161,6 +2491,8 @@ export default function App() {
         if(p)             setPscItems(p);
         if(g)             setGmdssItems(g);
         if(n)             setNoonLogged(n);
+        if(nd)            setNoonData(nd);
+        if(mr)            setMusterRoll(mr);
         if(port)          setActivePort(port);
         if(dl)            setDeckLog(dl);
         if(nvg !== null)  setNvgMode(nvg);
@@ -2173,6 +2505,8 @@ export default function App() {
   useEffect(()=>{ if(loaded) store.set('pscItems',  pscItems);   },[pscItems,  loaded]);
   useEffect(()=>{ if(loaded) store.set('gmdssItems',gmdssItems); },[gmdssItems,loaded]);
   useEffect(()=>{ if(loaded) store.set('noonLogged',noonLogged); },[noonLogged,loaded]);
+  useEffect(()=>{ if(loaded) store.set('noonData',  noonData);   },[noonData,  loaded]);
+  useEffect(()=>{ if(loaded) store.set('musterRoll',musterRoll); },[musterRoll,loaded]);
   useEffect(()=>{ if(loaded) store.set('vessel',    vessel);     },[vessel,    loaded]);
   useEffect(()=>{ if(loaded) store.set('activePort',activePort); },[activePort,loaded]);
   useEffect(()=>{ if(loaded) store.set('deckLog',   deckLog);    },[deckLog,   loaded]);
@@ -2205,7 +2539,8 @@ export default function App() {
   const ctx = {
     activePort,setActivePort,vessel,setVessel,
     defects,setDefects,pscItems,setPscItems,gmdssItems,setGmdssItems,
-    noonLogged,setNoonLogged,
+    noonLogged,setNoonLogged,noonData,setNoonData,
+    musterRoll,setMusterRoll,
     deckLog,setDeckLog,
     bridgeSub,setBridgeSub,currentUser,scrollH,
     lang,setLang,
