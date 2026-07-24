@@ -373,14 +373,14 @@ const EMERGENCY_CONTACTS = [
   {group:'P&I Club',      name:'UK P&I Club — London',   role:'Club Correspondent',                  phone:'+44 207 283 4646', email:'london@ukpandi.com',            available:'24/7'},
   {group:'P&I Club',      name:'Gulf Correspondent',      role:'P&I — Arabian Gulf',                  phone:'+971 4 331 9700',  email:'dubai@ukpandi.com',             available:'24/7'},
   {group:'Flag State',    name:'LISCR — Liberia',        role:'Flag State Administration',            phone:'+1 703 790 3434',  email:'safety@liscr.com',              available:'24/7'},
-  {group:'Medical',       name:'CIRM — Rome',             role:'Maritime Medical Advice',              phone:'+39 06 5929 4400', email:'cirm@gard.no',                  available:'24/7'},
+  {group:'Medical',       name:'CIRM — Rome',             role:'Maritime Medical Advice',              phone:'+39 06 5929 4400', email:'cirm@cirm.it',                  available:'24/7'},
   {group:'Security',      name:'UKMTO Dubai',             role:'HRA Maritime Security Reporting',      phone:'+971 50 552 3215', email:'ukmto@ukmto.org',               available:'24/7'},
   {group:'Security',      name:'MSCHOA',                  role:'Maritime Security Centre — HoA',       phone:'+44 1923 958 545', email:'postmaster@mschoa.org',         available:'24/7'},
   {group:'Class',         name:'DNV — Surveyor',          role:'Classification Society Contact',       phone:'+47 67 57 99 00',  email:'surveyor@dnv.com',              available:'Office hrs'},
 ];
 
 const AUDIT_LOG_SEED = [
-  {id:1, action:'PSC Self-Assessment completed',           user:'Ivanov, M.',       time:'2026-07-24T06:00:00Z', detail:'15 items verified. 2 items flagged for attention.'},
+  {id:1, action:'PSC Self-Assessment completed',           user:'Ivanov, M.',       time:'2026-07-24T06:00:00Z', detail:'32-item checklist reviewed. 9 items unverified — STCW rest hrs, immersion suit, ballast records.'},
   {id:2, action:'Defect → WIP: OWS 15ppm Sensor',         user:'Nguyen, V.',       time:'2026-07-23T14:30:00Z', detail:'Investigation in progress. Bypass authorized by C/E.'},
   {id:3, action:'GMDSS test logged — VHF DSC',            user:'Santos, J.',       time:'2026-07-23T09:15:00Z', detail:'Auto-entry generated in deck log per SOLAS Ch.IV.'},
   {id:4, action:'Noon report submitted',                   user:'Ivanov, M.',       time:'2026-07-23T12:00:00Z', detail:'Pos: 24°32.1N 057°18.4E. SOG 13.4 kts, ME Hrs 42,180.'},
@@ -1886,8 +1886,10 @@ const EngineView = () => {
             ))}
           </Card>
           <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}>
-            <CheckCircle2 size={12} color={T.accent.green}/>
-            <span style={{fontSize:11,color:T.text.muted}}>All alarms cleared. No outstanding engine defects requiring immediate action.</span>
+            {engDefects.length>0
+              ?<><AlertTriangle size={12} color={T.accent.amber}/><span style={{fontSize:11,color:T.accent.amber}}>All alarms cleared. {engDefects.length} open engine defect{engDefects.length>1?'s':''} — see Defects log.</span></>
+              :<><CheckCircle2 size={12} color={T.accent.green}/><span style={{fontSize:11,color:T.text.muted}}>All alarms cleared. No outstanding engine defects.</span></>
+            }
           </div>
         </div>
       )}
@@ -2349,7 +2351,7 @@ const MaintenanceView = () => {
 
 // ── OPS ────────────────────────────────────────────────────
 const OpsView = () => {
-  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,noonData,setNoonData,musterRoll,setMusterRoll,currentUser,vessel,setDeckLog,scrollH,lang} = useApp();
+  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,noonData,setNoonData,musterRoll,setMusterRoll,defects,currentUser,vessel,setDeckLog,scrollH,lang} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
 
@@ -2410,7 +2412,7 @@ const OpsView = () => {
   const today_d   = new Date();
   const pscExpiredCerts  = Object.values(CREW_CERTS).flat().some(c=>new Date(c.expires)<today_d);
   const pscRestViolation = REST_HOURS_7D.some(row=>Math.min(...row.hours)<10||row.hours.reduce((a,b)=>a+b,0)<77);
-  const pscLinkedDefects = DEFECTS_SEED.filter(d=>d.pscLinked&&d.status!=='closed');
+  const pscLinkedDefects = defects.filter(d=>d.pscLinked&&d.status!=='closed');
   const pscImmersionOverdue = SCHEDULED_JOBS.some(j=>j.job.toLowerCase().includes('immersion')&&j.due.includes('OVERDUE'));
 
   const togglePsc = id => setPscItems(items=>items.map(item=>{
@@ -2683,7 +2685,7 @@ const OpsView = () => {
           )}
           {showBio&&(
             <BiometricModal title="Sign Noon Report" onSuccess={()=>{
-              setNoonData(prev=>({...noonForm,signedAt:utcNow(),signedBy:currentUser?.label||'Master',...(prev?.originalSignedAt?{originalSignedAt:prev.originalSignedAt,amendVersion:(prev.amendVersion||1)+1}:{})}));
+              setNoonData(prev=>({...noonForm,signedAt:utcNow(),signedBy:currentUser?.label||'Master',...(prev?.originalSignedAt?{originalSignedAt:prev.originalSignedAt,amendVersion:(prev.amendVersion||0)+1}:{})}));
               setNoonLogged(true);
               setShowBio(false);
             }} onCancel={()=>setShowBio(false)}/>
@@ -2996,8 +2998,8 @@ const FleetView = () => {
   const {scrollH}=useApp();
   const vessels=[
     {name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden',dest:'Rotterdam',eta:getETA(13),speed:'13.4 kn',hra:true},
-    {name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'Waiting Orders',dest:'Singapore',eta:'Anchored 23 Jul',speed:'0.0 kn',hra:false},
-    {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:'Berthed 22 Jul',speed:'0.0 kn',hra:false},
+    {name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'Waiting Orders',dest:'Singapore',eta:`Anchored ${new Date(Date.now()-86400000).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`,speed:'0.0 kn',hra:false},
+    {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:`Berthed ${new Date(Date.now()-2*86400000).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`,speed:'0.0 kn',hra:false},
   ];
   return (
     <main aria-label="Fleet" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
