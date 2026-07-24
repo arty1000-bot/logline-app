@@ -283,7 +283,7 @@ const DEFECTS_SEED = [
 
 const SCHEDULED_JOBS = [
   {id:4, system:'Safety',      job:'Immersion Suit Annual Inspection',  interval:'Annual',   due:'OVERDUE 3 days — detainable PSC deficiency',   urgent:true},
-  {id:1, system:'Main Engine', job:'ME Cylinder Head Inspection',       interval:'4,000 RH', due:'OVERDUE 60 RH — DPA risk assessment approved', urgent:true},
+  {id:1, system:'Main Engine', job:'ME Cylinder Head Inspection',       interval:'4,000 RH', due:'OVERDUE 60 RH — DPA risk assessment approved', urgent:true, dpaExtension:{approvedRH:100,usedRH:60,approvedBy:'DPA Ref: RA-2026-047 · Smith, K.'}},
   {id:5, system:'Safety',      job:'Lifeboat Engine Test',              interval:'Weekly',   due:'DUE TODAY',                                     urgent:true},
   {id:3, system:'Safety',      job:'Liferaft Annual Inspection',        interval:'Annual',   due:'In 6 days',                                     urgent:true},
   {id:7, system:'Navigation',  job:'Magnetic Compass Deviation Card',   interval:'Annual',   due:'In 8 days',                                     urgent:true},
@@ -784,6 +784,7 @@ const BiometricModal = ({title,onSuccess,onCancel}) => {
 // DECK LOG MODAL
 // ═══════════════════════════════════════════════════════
 const LOG_CATEGORIES = ['Position Report','Watch Handover','Engine Movement','Emergency / Incident','Drill Record','Port Entry / Departure','Cargo Operation','GMDSS Test','Weather Observation','Other'];
+const DRILL_TYPES    = ['Abandon Ship Drill','Fire Drill','Man Overboard Drill','Enclosed Space Entry','Oil Spill Response','Steering Failure Drill'];
 const DeckLogModal = ({onSave,onCancel}) => {
   const {currentUser,vessel,lang} = useApp();
   const [text,setText]               = useState('');
@@ -1287,7 +1288,7 @@ const ShipBottomBar = ({activeTab,setActiveTab,defects,pscItems,currentUser}) =>
 // BRIDGE — FIX: Position editing
 // ═══════════════════════════════════════════════════════
 function BridgeViewWrapper() {
-  const {activePort,setActivePort,vessel,setVessel,bridgeSub,setBridgeSub,deckLog,setDeckLog,scrollH,lang} = useApp();
+  const {activePort,setActivePort,vessel,setVessel,bridgeSub,setBridgeSub,deckLog,setDeckLog,defects,scrollH,lang} = useApp();
   const [isSearch,    setIsSearch]    = useState(false);
   const [query,       setQuery]       = useState('');
   const [showReroute, setShowReroute] = useState(false);
@@ -1439,6 +1440,25 @@ function BridgeViewWrapper() {
             )}
           </div>
         </Card>
+
+        {(()=>{
+          const marpolDefect = defects.find(d=>d.priority==='critical'&&d.pscLinked&&d.status!=='closed'&&(d.desc.toLowerCase().includes('marpol')||d.component.toLowerCase().includes('ows')));
+          return marpolDefect?(
+            <div style={{background:'rgba(255,176,23,0.07)',border:`1px solid ${T.accent.amber}`,borderRadius:T.radius.md,padding:'14px 16px',display:'flex',flexDirection:'column',gap:8}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <AlertOctagon size={14} color={T.accent.amber}/>
+                <span style={{fontSize:12,fontWeight:700,color:T.accent.amber,textTransform:'uppercase',letterSpacing:'0.05em'}}>MARPOL Departure Warning</span>
+              </div>
+              <p style={{fontSize:12,color:T.text.muted,margin:0,lineHeight:1.55}}>
+                <span style={{fontWeight:700,color:T.text.vessel}}>{marpolDefect.component}</span> is open and critical. MARPOL Annex I requires a serviceable OWS 15ppm monitor before departure. DPA notification and company authorization required to proceed.
+              </p>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span style={{fontSize:10,fontFamily:'monospace',color:T.text.faint}}>Defect logged {utcFull(marpolDefect.loggedAt)} · {marpolDefect.assignee}</span>
+                <Badge label="PSC RISK" color={T.accent.amber} bg="rgba(255,176,23,0.12)"/>
+              </div>
+            </div>
+          ):null;
+        })()}
 
         <button onClick={()=>{ setBridgeSub('log'); setShowLogModal(true); }}
           style={{background:T.bg.surface,border:'none',borderRadius:T.radius.lg,padding:'18px',display:'flex',alignItems:'center',gap:14,cursor:'pointer',boxShadow:T.shadow.soft}}>
@@ -2112,6 +2132,29 @@ const MaintenanceView = () => {
               <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'9px 12px'}}>
                 <span style={{fontSize:12,fontFamily:'monospace',color:job.urgent?T.accent.coral:T.text.muted}}>{job.due}</span>
               </div>
+              {job.dpaExtension&&(()=>{
+                const {approvedRH,usedRH,approvedBy} = job.dpaExtension;
+                const remaining = approvedRH - usedRH;
+                const pct = Math.min(100,Math.round((usedRH/approvedRH)*100));
+                const nearLimit = remaining<=20;
+                return (
+                  <div style={{background:nearLimit?'rgba(255,90,95,0.06)':'rgba(255,176,23,0.06)',border:`1px solid ${nearLimit?'rgba(255,90,95,0.3)':'rgba(255,176,23,0.25)'}`,borderRadius:T.radius.sm,padding:'10px 12px'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+                      <span style={{fontSize:11,fontWeight:700,color:nearLimit?T.accent.coral:T.accent.amber}}>DPA Risk Extension</span>
+                      <span style={{fontSize:10,fontFamily:'monospace',color:nearLimit?T.accent.coral:T.accent.amber}}>{usedRH} / {approvedRH} RH used</span>
+                    </div>
+                    <div style={{background:T.bg.canvas,borderRadius:999,height:5,overflow:'hidden',marginBottom:6}}>
+                      <div style={{height:'100%',width:`${pct}%`,background:nearLimit?T.accent.coral:T.accent.amber,borderRadius:999,transition:'width 0.4s'}}/>
+                    </div>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <span style={{fontSize:10,color:T.text.faint,fontFamily:'monospace'}}>{approvedBy}</span>
+                      <span style={{fontSize:11,fontWeight:600,color:nearLimit?T.accent.coral:T.text.muted}}>
+                        {remaining>0?`${remaining} RH before escalation`:'LIMIT REACHED — DPA re-auth required'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
             </Card>
           ))}
         </div>
@@ -2180,6 +2223,35 @@ const OpsView = () => {
   const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,noonData,setNoonData,musterRoll,setMusterRoll,currentUser,vessel,setDeckLog,scrollH,lang} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
+
+  // Drill workflow state
+  const [drillLog,         setDrillLog]         = useState([...DRILL_LOG_SEED]);
+  const [drillActive,      setDrillActive]       = useState(false);
+  const [drillType,        setDrillType]         = useState('');
+  const [drillStartedAt,   setDrillStartedAt]    = useState(null);
+  const [drillElapsed,     setDrillElapsed]      = useState(0);
+  const [drillRemarks,     setDrillRemarks]      = useState('');
+  const [showDrillPicker,  setShowDrillPicker]   = useState(false);
+  useEffect(()=>{
+    if(!drillActive) return;
+    const id = setInterval(()=>setDrillElapsed(s=>s+1),1000);
+    return ()=>clearInterval(id);
+  },[drillActive]);
+  const fmtDrillTime = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  const startDrill = type => {
+    setDrillType(type); setDrillStartedAt(utcNow());
+    setDrillElapsed(0); setMusterRoll({}); setDrillActive(true); setShowDrillPicker(false);
+  };
+  const completeDrill = () => {
+    const durationMin = Math.max(1,Math.round(drillElapsed/60));
+    const absentCrew  = FULL_CREW.filter(c=>musterRoll[c.id]==='ABSENT');
+    const presentCount = FULL_CREW.length - absentCrew.length;
+    const absent = absentCrew.map(c=>c.name).join(', ');
+    const reportText = `${drillType} completed. Muster called ${utcFull(drillStartedAt)}. Full account in ${durationMin} min. ${presentCount}/${FULL_CREW.length} crew accounted for.${absent?` Absent: ${absent}.`:' All crew present.'} ${drillRemarks}`.trim();
+    setDeckLog(l=>[{text:reportText,category:'Drill Record',oow:currentUser?.label||'Master',author:currentUser?.label||'Master',timestamp:utcNow(),vessel:vessel?.name,lat:vessel?.lat,lon:vessel?.lon,cog:'293°',sog:'13.4',emergency:false,source:'drill'},...l]);
+    setDrillLog(l=>[{id:Date.now(),type:drillType,date:utcNow().slice(0,10),time:utcNow().slice(11,16)+'Z',duration:durationMin,remarks:reportText,officer:currentUser?.label||'Master'},...l]);
+    setDrillActive(false); setDrillType(''); setDrillStartedAt(null); setDrillElapsed(0); setDrillRemarks('');
+  };
   const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',robLsmgo:'',avgSpeed:'',cog:'',baro:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meRunHrs:'',meCumHrs:'',etaNext:'',voyageNo:'',remarks:''});
   const noonRequiredFields = ['voyageNo','lat','lon','distRun','meConsump','rob'];
   const noonReady = noonRequiredFields.every(k=>noonForm[k].trim());
@@ -2490,8 +2562,85 @@ const OpsView = () => {
         </div>
       )}
 
-      {opsSub==='muster'&&(
+      {opsSub==='muster'&&(()=>{
+        const presentCount = FULL_CREW.filter(c=>musterRoll[c.id]!=='ABSENT').length;
+        const absentCrew   = FULL_CREW.filter(c=>musterRoll[c.id]==='ABSENT');
+        const allPresent   = absentCrew.length===0;
+        return (
         <div style={{display:'flex',flexDirection:'column',gap:14,animation:'fadeUp 0.4s ease-out'}}>
+
+          {/* ACTIVE DRILL BANNER */}
+          {drillActive&&(
+            <div style={{background:'rgba(255,90,95,0.08)',border:`2px solid ${T.accent.coral}`,borderRadius:T.radius.lg,padding:'18px 20px',display:'flex',flexDirection:'column',gap:12}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                    <div style={{width:8,height:8,borderRadius:'50%',background:T.accent.coral,animation:'pulse 1s infinite'}}/>
+                    <span style={{fontSize:11,fontWeight:700,color:T.accent.coral,textTransform:'uppercase',letterSpacing:'0.08em'}}>DRILL IN PROGRESS</span>
+                  </div>
+                  <p style={{fontSize:15,fontWeight:700,color:T.text.vessel,margin:0}}>{drillType}</p>
+                  <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:'2px 0 0'}}>Called {utcFull(drillStartedAt)}</p>
+                </div>
+                <div style={{textAlign:'right'}}>
+                  <p style={{fontFamily:'monospace',fontSize:28,fontWeight:800,color:T.accent.coral,margin:'0 0 2px',letterSpacing:'0.04em'}}>{fmtDrillTime(drillElapsed)}</p>
+                  <p style={{fontSize:12,fontWeight:700,color:allPresent?T.accent.green:T.accent.amber,margin:0}}>{presentCount}/{FULL_CREW.length} accounted</p>
+                </div>
+              </div>
+              {absentCrew.length>0&&(
+                <div style={{background:'rgba(255,90,95,0.06)',borderRadius:T.radius.sm,padding:'8px 12px'}}>
+                  <p style={{fontSize:11,fontWeight:700,color:T.accent.coral,margin:'0 0 4px'}}>UNACCOUNTED ({absentCrew.length})</p>
+                  {absentCrew.map(c=><p key={c.id} style={{fontSize:12,color:T.text.muted,margin:'2px 0',fontFamily:'monospace'}}>{c.name} · {c.rank} · Stn {c.station}</p>)}
+                </div>
+              )}
+              {allPresent&&(
+                <div style={{background:'rgba(0,229,143,0.08)',border:`1px solid rgba(0,229,143,0.3)`,borderRadius:T.radius.sm,padding:'8px 12px',display:'flex',alignItems:'center',gap:8}}>
+                  <CheckCircle2 size={13} color={T.accent.green}/>
+                  <span style={{fontSize:12,fontWeight:700,color:T.accent.green}}>Full crew accounted for — {fmtDrillTime(drillElapsed)} elapsed</span>
+                </div>
+              )}
+              <div>
+                <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>Drill Remarks (for report)</label>
+                <textarea value={drillRemarks} onChange={e=>setDrillRemarks(e.target.value)} placeholder="Observations, deficiencies noted, equipment tested…" rows={2}
+                  style={{width:'100%',background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'10px 12px',color:T.text.main,fontSize:12,resize:'none',fontFamily:'inherit',lineHeight:1.5}}/>
+              </div>
+              <button onClick={completeDrill} style={{background:T.accent.coral,border:'none',borderRadius:T.radius.pill,padding:'14px',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer'}}>
+                Complete Drill & Generate Report →
+              </button>
+            </div>
+          )}
+
+          {/* START DRILL BUTTON / PICKER */}
+          {!drillActive&&!showDrillPicker&&(
+            <button onClick={()=>setShowDrillPicker(true)}
+              style={{background:'rgba(0,229,143,0.08)',border:`1px solid rgba(0,229,143,0.3)`,borderRadius:T.radius.md,padding:'14px 18px',display:'flex',alignItems:'center',gap:12,cursor:'pointer',color:T.accent.green,fontSize:13,fontWeight:700,width:'100%'}}>
+              <div style={{width:36,height:36,borderRadius:T.radius.pill,background:'rgba(0,229,143,0.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <ClipboardList size={17} color={T.accent.green}/>
+              </div>
+              <div style={{textAlign:'left'}}>
+                <p style={{margin:0,color:T.accent.green,fontWeight:700}}>Start Drill</p>
+                <p style={{margin:'2px 0 0',fontSize:11,color:T.text.muted,fontWeight:400}}>Timestamps muster call · tracks account time · generates report</p>
+              </div>
+            </button>
+          )}
+          {!drillActive&&showDrillPicker&&(
+            <Card style={{border:`1px solid rgba(0,229,143,0.3)`}}>
+              <p style={{fontSize:13,fontWeight:700,color:T.text.vessel,margin:'0 0 12px'}}>Select Drill Type</p>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {DRILL_TYPES.map(type=>(
+                  <button key={type} onClick={()=>startDrill(type)}
+                    style={{background:T.bg.canvas,border:`1px solid ${T.bg.surfaceAlt}`,borderRadius:T.radius.md,padding:'12px 16px',textAlign:'left',cursor:'pointer',fontSize:13,fontWeight:600,color:T.text.vessel,transition:'all 0.15s'}}>
+                    {type}
+                  </button>
+                ))}
+              </div>
+              <button onClick={()=>setShowDrillPicker(false)}
+                style={{marginTop:12,background:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'11px',color:T.text.muted,fontSize:13,fontWeight:600,cursor:'pointer',width:'100%'}}>
+                Cancel
+              </button>
+            </Card>
+          )}
+
+          {/* Station cards */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
             {['A','B'].map(stn=>{
               const stnCrew = FULL_CREW.filter(c=>c.station===stn);
@@ -2507,45 +2656,41 @@ const OpsView = () => {
               );
             })}
           </div>
-          {(()=>{
-            const presentCount = FULL_CREW.filter(c=>musterRoll[c.id]!=='ABSENT').length;
-            const absentCount  = FULL_CREW.length - presentCount;
-            return (
-              <Card>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-                  <CardHeader icon={Users} title={`Muster List — ${FULL_CREW.length} POB`}/>
-                  <div style={{display:'flex',gap:8}}>
-                    <Badge label={`${presentCount} PRESENT`} color={T.accent.green} bg="rgba(0,229,143,0.1)"/>
-                    {absentCount>0&&<Badge label={`${absentCount} ABSENT`} color={T.accent.coral} bg="rgba(255,90,95,0.1)"/>}
+
+          {/* Muster list */}
+          <Card>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <CardHeader icon={Users} title={`Muster List — ${FULL_CREW.length} POB`}/>
+              <div style={{display:'flex',gap:8}}>
+                <Badge label={`${presentCount} PRESENT`} color={T.accent.green} bg="rgba(0,229,143,0.1)"/>
+                {absentCrew.length>0&&<Badge label={`${absentCrew.length} ABSENT`} color={T.accent.coral} bg="rgba(255,90,95,0.1)"/>}
+              </div>
+            </div>
+            {FULL_CREW.map((c,i)=>{
+              const status = musterRoll[c.id]==='ABSENT'?'ABSENT':'PRESENT';
+              return (
+                <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:i<FULL_CREW.length-1?`1px solid ${T.bg.canvas}`:'none'}}>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:13,fontWeight:600,margin:0,color:status==='ABSENT'?T.accent.coral:T.text.vessel}}>{c.name}</p>
+                    <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
+                    <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0',fontStyle:'italic'}}>{c.duty} · {c.lsa}</p>
+                  </div>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,flexShrink:0}}>
+                    <Badge label={`STN ${c.station}`} color={c.station==='A'?T.accent.primary:T.accent.cyan} bg={c.station==='A'?'rgba(82,78,250,0.15)':'rgba(18,212,255,0.12)'}/>
+                    <button onClick={()=>setMusterRoll(r=>({...r,[c.id]:status==='PRESENT'?'ABSENT':'PRESENT'}))}
+                      style={{background:status==='ABSENT'?'rgba(255,90,95,0.12)':'rgba(0,229,143,0.1)',border:`1px solid ${status==='ABSENT'?T.accent.coral:T.accent.green}44`,borderRadius:T.radius.pill,padding:'4px 10px',fontSize:10,fontWeight:700,color:status==='ABSENT'?T.accent.coral:T.accent.green,cursor:'pointer',transition:'all 0.2s'}}>
+                      {status}
+                    </button>
                   </div>
                 </div>
-                {FULL_CREW.map((c,i)=>{
-                  const status = musterRoll[c.id]==='ABSENT'?'ABSENT':'PRESENT';
-                  return (
-                    <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:i<FULL_CREW.length-1?`1px solid ${T.bg.canvas}`:'none'}}>
-                      <div style={{flex:1}}>
-                        <p style={{fontSize:13,fontWeight:600,margin:0,color:status==='ABSENT'?T.accent.coral:T.text.vessel}}>{c.name}</p>
-                        <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
-                        <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0',fontStyle:'italic'}}>{c.duty} · {c.lsa}</p>
-                      </div>
-                      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,flexShrink:0}}>
-                        <Badge label={`STN ${c.station}`} color={c.station==='A'?T.accent.primary:T.accent.cyan} bg={c.station==='A'?'rgba(82,78,250,0.15)':'rgba(18,212,255,0.12)'}/>
-                        <button onClick={()=>setMusterRoll(r=>({...r,[c.id]:status==='PRESENT'?'ABSENT':'PRESENT'}))}
-                          style={{background:status==='ABSENT'?'rgba(255,90,95,0.12)':'rgba(0,229,143,0.1)',border:`1px solid ${status==='ABSENT'?T.accent.coral:T.accent.green}44`,borderRadius:T.radius.pill,padding:'4px 10px',fontSize:10,fontWeight:700,color:status==='ABSENT'?T.accent.coral:T.accent.green,cursor:'pointer',transition:'all 0.2s'}}>
-                          {status}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </Card>
-            );
-          })()}
+              );
+            })}
+          </Card>
 
           {/* Drill Log */}
           <Card>
-            <CardHeader icon={ClipboardList} title="Drill Log (Last 4 Drills)"/>
-            {DRILL_LOG_SEED.map((drill,i)=>(
+            <CardHeader icon={ClipboardList} title={`Drill Log (${drillLog.length} drills)`}/>
+            {drillLog.slice(0,5).map((drill,i)=>(
               <div key={drill.id} style={{paddingTop:i===0?0:14,marginTop:i===0?0:14,borderTop:i===0?'none':`1px solid ${T.bg.canvas}`}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
                   <span style={{fontSize:13,fontWeight:700,color:T.text.vessel}}>{drill.type}</span>
@@ -2560,7 +2705,8 @@ const OpsView = () => {
             ))}
           </Card>
         </div>
-      )}
+        );
+      })()}
     </main>
   );
 };
