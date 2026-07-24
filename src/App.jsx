@@ -111,69 +111,160 @@ const PORT_COORDS = {
 // SEED DATA
 // ═══════════════════════════════════════════════════════
 const GLOBAL_PORTS = [
-  {id:'NLRTM',name:'Rotterdam',  country:'Netherlands', region:'Europe',     dist:4200,etaDays:14, wind:'NW 15kt',swell:'1.2m',blocked:false,hra:false},
-  {id:'SGSIN',name:'Singapore',  country:'Singapore',   region:'Asia',       dist:3100,etaDays:10, wind:'NE 8kt', swell:'0.5m',blocked:false,hra:false},
-  {id:'USLGB',name:'Long Beach', country:'USA',         region:'N. America', dist:8200,etaDays:27, wind:'W 10kt', swell:'1.8m',blocked:false,hra:false},
-  {id:'AEJEA',name:'Jebel Ali',  country:'UAE',         region:'Gulf',       dist:400, etaDays:1.5,wind:'NW 5kt', swell:'0.2m',blocked:true, hra:true, alert:'HORMUZ BLOCKADE'},
-  {id:'SAJED',name:'Jeddah',     country:'Saudi Arabia',region:'Red Sea',    dist:1200,etaDays:4,  wind:'N 12kt', swell:'0.8m',blocked:false,hra:true, alert:'Land-Bridge Hub'},
+  {id:'NLRTM',name:'Rotterdam',    country:'Netherlands',  region:'Europe',        dist:4200, etaDays:14,  wind:'NW 15kt',swell:'1.2m',blocked:false,hra:false},
+  {id:'SGSIN',name:'Singapore',    country:'Singapore',    region:'Asia',          dist:3100, etaDays:10,  wind:'NE 8kt', swell:'0.5m',blocked:false,hra:false},
+  {id:'USLGB',name:'Long Beach',   country:'USA',          region:'N. America',    dist:8200, etaDays:27,  wind:'W 10kt', swell:'1.8m',blocked:false,hra:false},
+  {id:'AEJEA',name:'Jebel Ali',    country:'UAE',          region:'Gulf',          dist:400,  etaDays:1.5, wind:'NW 5kt', swell:'0.2m',blocked:true, hra:true, alert:'HORMUZ BLOCKADE'},
+  {id:'SAJED',name:'Jeddah',       country:'Saudi Arabia', region:'Red Sea',       dist:1200, etaDays:4,   wind:'N 12kt', swell:'0.8m',blocked:false,hra:true, alert:'Land-Bridge Hub'},
+  {id:'GRCFR',name:'Piraeus',      country:'Greece',       region:'Mediterranean', dist:3800, etaDays:13,  wind:'NW 20kt',swell:'1.5m',blocked:false,hra:false},
+  {id:'AEDXB',name:'Fujairah',     country:'UAE',          region:'Gulf of Oman',  dist:350,  etaDays:1.2, wind:'NW 8kt', swell:'0.3m',blocked:false,hra:false},
+  {id:'EGPSD',name:'Port Said',    country:'Egypt',        region:'Mediterranean', dist:2800, etaDays:9,   wind:'N 10kt', swell:'0.6m',blocked:false,hra:false},
+  {id:'CNSHG',name:'Shanghai',     country:'China',        region:'Asia',          dist:5800, etaDays:19,  wind:'E 12kt', swell:'1.0m',blocked:false,hra:false},
+  {id:'JPYOK',name:'Yokohama',     country:'Japan',        region:'Asia',          dist:5200, etaDays:17,  wind:'SE 8kt', swell:'0.8m',blocked:false,hra:false},
+  {id:'KRUSN',name:'Ulsan',        country:'South Korea',  region:'Asia',          dist:5100, etaDays:17,  wind:'NE 15kt',swell:'1.2m',blocked:false,hra:false},
+  {id:'USHOU',name:'Houston',      country:'USA',          region:'Gulf of Mexico',dist:11200,etaDays:37,  wind:'SE 8kt', swell:'1.0m',blocked:false,hra:false},
+  {id:'BRBSS',name:'Santos',       country:'Brazil',       region:'S. America',    dist:7400, etaDays:24,  wind:'SW 12kt',swell:'2.0m',blocked:false,hra:false},
+  {id:'NGLOS',name:'Lagos',        country:'Nigeria',      region:'W. Africa',     dist:4900, etaDays:16,  wind:'SW 15kt',swell:'1.8m',blocked:false,hra:true, alert:'Gulf of Guinea — piracy risk'},
+  {id:'ZAWBU',name:'Durban',       country:'South Africa', region:'S. Africa',     dist:4100, etaDays:14,  wind:'SW 18kt',swell:'2.5m',blocked:false,hra:false},
 ];
 
 const FULL_CREW = [
   // Deck Department
-  {id:1, name:'Ivanov, M.',   rank:'Master',            dept:'Deck'},
-  {id:2, name:'Santos, J.',   rank:'Chief Officer',     dept:'Deck'},
-  {id:3, name:'Chen, W.',     rank:'2nd Officer',       dept:'Deck'},
-  {id:4, name:'Nair, S.',     rank:'3rd Officer',       dept:'Deck'},
-  {id:5, name:'Park, S.',     rank:'Bosun',             dept:'Deck'},
-  {id:6, name:'Reyes, D.',    rank:'Able Seaman',       dept:'Deck'},
-  {id:7, name:'Okafor, E.',   rank:'Able Seaman',       dept:'Deck'},
-  {id:8, name:'Mendoza, C.',  rank:'Able Seaman',       dept:'Deck'},
-  {id:9, name:'Petrov, A.',   rank:'Ordinary Seaman',   dept:'Deck'},
-  {id:10,name:'Tran, H.',     rank:'Ordinary Seaman',   dept:'Deck'},
-  {id:11,name:'Ahuja, R.',    rank:'Pumpman',           dept:'Deck'},
-  {id:12,name:'Garcia, M.',   rank:'Deck Cadet',        dept:'Deck'},
+  {id:1, name:'Ivanov, M.',   rank:'Master',            dept:'Deck',     station:'A',lsa:'Stbd Lifeboat #1',duty:'Overall Commander'},
+  {id:2, name:'Santos, J.',   rank:'Chief Officer',     dept:'Deck',     station:'A',lsa:'Stbd Lifeboat #1',duty:'Lifeboat Commander'},
+  {id:3, name:'Chen, W.',     rank:'2nd Officer',       dept:'Deck',     station:'B',lsa:'Port Lifeboat #2', duty:'Rescue Boat Commander'},
+  {id:4, name:'Nair, S.',     rank:'3rd Officer',       dept:'Deck',     station:'B',lsa:'Port Lifeboat #2', duty:'Rescue Boat Engineer'},
+  {id:5, name:'Park, S.',     rank:'Bosun',             dept:'Deck',     station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Team A Leader'},
+  {id:6, name:'Reyes, D.',    rank:'Able Seaman',       dept:'Deck',     station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Team A'},
+  {id:7, name:'Okafor, E.',   rank:'Able Seaman',       dept:'Deck',     station:'B',lsa:'Port Lifeboat #2', duty:'Fire Team B'},
+  {id:8, name:'Mendoza, C.',  rank:'Able Seaman',       dept:'Deck',     station:'B',lsa:'Port Lifeboat #2', duty:'Fire Team B'},
+  {id:9, name:'Petrov, A.',   rank:'Ordinary Seaman',   dept:'Deck',     station:'A',lsa:'Stbd Lifeboat #1',duty:'Helmsman'},
+  {id:10,name:'Tran, H.',     rank:'Ordinary Seaman',   dept:'Deck',     station:'B',lsa:'Port Lifeboat #2', duty:'Line Handler'},
+  {id:11,name:'Ahuja, R.',    rank:'Pumpman',           dept:'Deck',     station:'A',lsa:'Stbd Lifeboat #1',duty:'Foam Team Leader'},
+  {id:12,name:'Garcia, M.',   rank:'Deck Cadet',        dept:'Deck',     station:'B',lsa:'Port Lifeboat #2', duty:'Accountability'},
   // Engine Department
-  {id:13,name:'Smith, R.',    rank:'Chief Engineer',    dept:'Engine'},
-  {id:14,name:'Kumar, A.',    rank:'2nd Engineer',      dept:'Engine'},
-  {id:15,name:'Nguyen, V.',   rank:'3rd Engineer',      dept:'Engine'},
-  {id:16,name:'Osei, K.',     rank:'4th Engineer',      dept:'Engine'},
-  {id:17,name:'Tanaka, H.',   rank:'Electrical Officer',dept:'Engine'},
-  {id:18,name:'Mbeki, S.',    rank:'Fitter',            dept:'Engine'},
-  {id:19,name:'Lim, J.',      rank:'Motorman',          dept:'Engine'},
-  {id:20,name:'Hassan, M.',   rank:'Motorman',          dept:'Engine'},
-  {id:21,name:'Kowalski, P.', rank:'Engine Cadet',      dept:'Engine'},
+  {id:13,name:'Smith, R.',    rank:'Chief Engineer',    dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Engine Room Coordinator'},
+  {id:14,name:'Kumar, A.',    rank:'2nd Engineer',      dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Engine Room Shutdown'},
+  {id:15,name:'Nguyen, V.',   rank:'3rd Engineer',      dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Fire Team B — Engine'},
+  {id:16,name:'Osei, K.',     rank:'4th Engineer',      dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Team A — Engine'},
+  {id:17,name:'Tanaka, H.',   rank:'Electrical Officer',dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Emergency Generator'},
+  {id:18,name:'Mbeki, S.',    rank:'Fitter',            dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Team A'},
+  {id:19,name:'Lim, J.',      rank:'Motorman',          dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Fire Pump Operator'},
+  {id:20,name:'Hassan, M.',   rank:'Motorman',          dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Pump Operator'},
+  {id:21,name:'Kowalski, P.', rank:'Engine Cadet',      dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Accountability'},
   // Catering / General Service
-  {id:22,name:'Diaz, R.',     rank:'Chief Cook',        dept:'Catering'},
-  {id:23,name:'Wu, X.',       rank:'Steward',           dept:'Catering'},
-  {id:24,name:'Ibrahim, A.',  rank:'General Steward',   dept:'Catering'},
+  {id:22,name:'Diaz, R.',     rank:'Chief Cook',        dept:'Catering', station:'A',lsa:'Stbd Lifeboat #1',duty:'Medic / First Aid'},
+  {id:23,name:'Wu, X.',       rank:'Steward',           dept:'Catering', station:'B',lsa:'Port Lifeboat #2', duty:'Accountability — Catering'},
+  {id:24,name:'Ibrahim, A.',  rank:'General Steward',   dept:'Catering', station:'A',lsa:'Stbd Lifeboat #1',duty:'Provisions / Stores'},
+];
+
+const CREW_CERTS = {
+  1:  [{type:'CoC — STCW II/2 (Master ≥3000 GT)',   issued:'2021-09-10',expires:'2026-09-10',status:'expiring'},
+       {type:'Medical Certificate (ML5)',             issued:'2025-02-14',expires:'2027-02-14',status:'valid'},
+       {type:'Advanced Fire Fighting (STCW VI/3)',    issued:'2021-03-01',expires:'2026-03-01',status:'expired'},
+       {type:'ECDIS Type-Specific Training',          issued:'2022-04-20',expires:'2027-04-20',status:'valid'}],
+  2:  [{type:'CoC — STCW II/1 (OOW ≥500 GT)',       issued:'2023-07-20',expires:'2028-07-20',status:'valid'},
+       {type:'Medical Certificate (ML5)',             issued:'2024-06-15',expires:'2026-09-15',status:'expiring'},
+       {type:'STCW Basic Safety Training',            issued:'2021-11-10',expires:'2026-11-10',status:'valid'},
+       {type:'Tanker Familiarisation (STCW V/1)',     issued:'2022-01-15',expires:'2027-01-15',status:'valid'}],
+  3:  [{type:'CoC — STCW II/1 (OOW ≥500 GT)',       issued:'2024-03-01',expires:'2029-03-01',status:'valid'},
+       {type:'Medical Certificate (ML5)',             issued:'2024-08-01',expires:'2026-08-01',status:'expiring'},
+       {type:'GMDSS GOC',                            issued:'2022-06-10',expires:'2027-06-10',status:'valid'},
+       {type:'ECDIS Type-Specific Training',          issued:'2023-01-20',expires:'2028-01-20',status:'valid'}],
+  4:  [{type:'CoC — STCW II/1 (OOW ≥500 GT)',       issued:'2023-10-15',expires:'2028-10-15',status:'valid'},
+       {type:'Medical Certificate (ML5)',             issued:'2025-03-10',expires:'2027-03-10',status:'valid'},
+       {type:'STCW Basic Safety Training',            issued:'2022-08-01',expires:'2027-08-01',status:'valid'}],
+  13: [{type:'CoC — STCW III/2 (Chief Engineer ≥3000 kW)',issued:'2022-05-20',expires:'2027-05-20',status:'valid'},
+       {type:'Medical Certificate (ML5)',             issued:'2024-11-01',expires:'2026-11-01',status:'expiring'},
+       {type:'Advanced Fire Fighting (STCW VI/3)',    issued:'2022-04-10',expires:'2027-04-10',status:'valid'},
+       {type:'High Voltage Endorsement',              issued:'2021-06-01',expires:'2026-06-01',status:'expired'}],
+  14: [{type:'CoC — STCW III/1 (OOW Engine Room)',   issued:'2024-02-14',expires:'2029-02-14',status:'valid'},
+       {type:'Medical Certificate (ML5)',             issued:'2025-01-20',expires:'2027-01-20',status:'valid'},
+       {type:'STCW Basic Safety Training',            issued:'2022-10-05',expires:'2027-10-05',status:'valid'}],
+  15: [{type:'CoC — STCW III/1 (OOW Engine Room)',   issued:'2021-07-01',expires:'2026-07-01',status:'expired'},
+       {type:'Medical Certificate (ML5)',             issued:'2024-09-01',expires:'2026-09-01',status:'expiring'},
+       {type:'STCW Basic Safety Training',            issued:'2021-07-01',expires:'2026-07-01',status:'expired'}],
+};
+
+const REST_HOURS_7D = [
+  {id:1, name:'Ivanov, M.',   rank:'Master',             hours:[12,11,10,12,11,10,11]},
+  {id:2, name:'Santos, J.',   rank:'Chief Officer',      hours:[10,10,10,11,10, 9,10]},
+  {id:3, name:'Chen, W.',     rank:'2nd Officer',        hours:[12,12,11,12,12,11,12]},
+  {id:4, name:'Nair, S.',     rank:'3rd Officer',        hours:[11,12,12,11,12,12,11]},
+  {id:13,name:'Smith, R.',    rank:'Chief Engineer',     hours:[10,11,10,12,11,10,10]},
+  {id:14,name:'Kumar, A.',    rank:'2nd Engineer',       hours:[12,11,12,11,12,12,11]},
+  {id:15,name:'Nguyen, V.',   rank:'3rd Engineer',       hours:[10,10,10,10,10, 9,10]},
+  {id:16,name:'Osei, K.',     rank:'4th Engineer',       hours:[11,12,11,12,11,12,11]},
 ];
 
 const PSC_SEED = [
-  {id:1,cat:'Certificates',item:'Safety Management Certificate (SMC)',  done:true },
-  {id:2,cat:'Certificates',item:'MARPOL Annex I – IOPP Certificate',    done:true },
-  {id:3,cat:'Safety',      item:'Fire detection & suppression systems', done:true },
-  {id:4,cat:'Safety',      item:'LSA equipment – liferafts, EPIRBs',    done:false},
-  {id:5,cat:'Crew',        item:'STCW rest hours – all officers current',done:false},
+  // Statutory Certificates
+  {id:1, cat:'Certificates', item:'Safety Management Certificate (SMC)',                         done:true },
+  {id:2, cat:'Certificates', item:'MARPOL Annex I – IOPP Certificate',                           done:true },
+  {id:3, cat:'Certificates', item:'International Tonnage Certificate (ITC 69)',                   done:true },
+  {id:4, cat:'Certificates', item:'Load Line Certificate (ILLC)',                                 done:true },
+  {id:5, cat:'Certificates', item:'Cargo Ship Safety Construction Certificate',                   done:true },
+  {id:6, cat:'Certificates', item:'Cargo Ship Safety Equipment Certificate',                      done:true },
+  {id:7, cat:'Certificates', item:'MARPOL Annex II – NLS Certificate of Fitness',                done:true },
+  {id:8, cat:'Certificates', item:'Certificate of Class (DNV/LR) – valid and endorsed',          done:true },
+  // Records
+  {id:9, cat:'Records',      item:'Oil Record Book Part I (Machinery Space) – signed & current', done:true },
+  {id:10,cat:'Records',      item:'Oil Record Book Part II (Cargo/Ballast) – signed & current',  done:false},
+  {id:11,cat:'Records',      item:'Ballast Water Record Book – current and complete',             done:false},
+  {id:12,cat:'Records',      item:'Garbage Management Plan posted & Garbage Record Book current', done:true },
+  {id:13,cat:'Records',      item:'Voyage plan – signed by Master, current leg',                  done:true },
+  // Safety
+  {id:14,cat:'Safety',       item:'Fire detection & suppression systems – tested',                done:true },
+  {id:15,cat:'Safety',       item:'LSA equipment – liferafts, EPIRBs, SARTs serviceable',        done:false},
+  {id:16,cat:'Safety',       item:'Immersion suits – condition checked, inventory correct',       done:false},
+  {id:17,cat:'Safety',       item:'Emergency towing equipment – rigged and operational',          done:true },
+  {id:18,cat:'Safety',       item:'Fire dampers – tested, all close under manual release',        done:false},
+  // Crew
+  {id:19,cat:'Crew',         item:'STCW rest hours – all officers current (Form A/B available)', done:false},
+  {id:20,cat:'Crew',         item:'Crew List – signed by Master, copies available in English',   done:true },
+  {id:21,cat:'Crew',         item:'Minimum Safe Manning – complied with (Certificate on bridge)',  done:true },
+  {id:22,cat:'Crew',         item:'Medical certificates – all crew current',                      done:false},
+  {id:23,cat:'Crew',         item:'Drug & Alcohol Policy – posted in crew areas',                 done:true },
+  // ISM / Security
+  {id:24,cat:'ISM/Security', item:'ISM – last internal audit within 12 months',                   done:true },
+  {id:25,cat:'ISM/Security', item:'Ship Security Plan (SSP) verified, SSO designated',            done:true },
 ];
 
 const GMDSS_SEED = [
-  {id:1,item:'MF/HF DSC Controller',       tested:true, freq:'Daily',  testedAt:'2026-03-09T07:14:00Z',testedBy:'Chen, W.'},
-  {id:2,item:'VHF DSC Controller (Ch 70)', tested:true, freq:'Daily',  testedAt:'2026-03-09T07:16:00Z',testedBy:'Chen, W.'},
-  {id:3,item:'SART (2×) – battery date',   tested:false,freq:'Monthly',testedAt:null,testedBy:null},
-  {id:4,item:'EPIRB – self-test function',  tested:false,freq:'Weekly', testedAt:null,testedBy:null},
+  {id:1,item:'MF/HF DSC Controller',          tested:true, freq:'Daily',  testedAt:'2026-07-23T07:14:00Z',testedBy:'Chen, W.'},
+  {id:2,item:'VHF DSC Controller (Ch 70)',    tested:true, freq:'Daily',  testedAt:'2026-07-23T07:16:00Z',testedBy:'Chen, W.'},
+  {id:3,item:'NAVTEX Receiver (518 kHz)',     tested:true, freq:'Daily',  testedAt:'2026-07-23T07:20:00Z',testedBy:'Chen, W.'},
+  {id:4,item:'INMARSAT-C – distress alert',   tested:true, freq:'Monthly',testedAt:'2026-07-01T08:00:00Z',testedBy:'Nair, S.'},
+  {id:5,item:'SART (2×) – battery & housing', tested:false,freq:'Monthly',testedAt:null,testedBy:null},
+  {id:6,item:'EPIRB – self-test function',    tested:false,freq:'Weekly', testedAt:null,testedBy:null},
 ];
 
 const DEFECTS_SEED = [
-  {id:1,system:'Main Engine',  component:'ME FW Cooler',      desc:'Minor weeping on inspection cover gasket.',              priority:'medium',  loggedAt:'2026-03-06T10:22:00Z',updatedAt:null,assignee:'Kumar, A.',status:'open',     pscLinked:false},
-  {id:2,system:'Deck',         component:'Bow Thruster Seal', desc:'Shaft seal degradation observed. Awaiting spare.',       priority:'high',    loggedAt:'2026-02-26T14:00:00Z',updatedAt:null,assignee:'Smith, R.',status:'spare_req',pscLinked:false},
-  {id:3,system:'Safety',       component:'EPIRB HRU Unit #2', desc:'Hydrostatic release unit expired. PSC deficiency risk.', priority:'critical',loggedAt:'2026-03-05T09:00:00Z',updatedAt:null,assignee:'Chen, W.', status:'open',     pscLinked:true },
+  {id:1, system:'Main Engine',  component:'ME FW Cooler',            desc:'Minor weeping on inspection cover gasket. Torqued studs — leak reduced. Monitoring.',             priority:'medium',  loggedAt:'2026-07-06T10:22:00Z',updatedAt:null,assignee:'Kumar, A.', status:'open',     pscLinked:false},
+  {id:2, system:'Deck',         component:'Bow Thruster Shaft Seal', desc:'Shaft seal degradation observed. Restrict to starboard anchor ops until seal replaced.',           priority:'high',    loggedAt:'2026-07-10T14:00:00Z',updatedAt:null,assignee:'Smith, R.',status:'spare_req',pscLinked:false},
+  {id:3, system:'Safety',       component:'EPIRB HRU Unit #2',       desc:'Hydrostatic release unit expired 2026-06-30. Replacement on order — ETA Singapore 10 days.',       priority:'critical',loggedAt:'2026-07-05T09:00:00Z',updatedAt:null,assignee:'Chen, W.', status:'open',     pscLinked:true },
+  {id:4, system:'Safety',       component:'Fire Damper BD-14',       desc:'B-deck alleyway damper sticking — does not fully close under manual test. Fire risk.',             priority:'high',    loggedAt:'2026-07-18T11:00:00Z',updatedAt:null,assignee:'Santos, J.',status:'open',    pscLinked:true },
+  {id:5, system:'Main Engine',  component:'ME Cylinder #4 Liner',    desc:'Scavenge port cracking observed at inspection port. Monitoring every 250 RH. DPA informed.',      priority:'medium',  loggedAt:'2026-07-14T08:30:00Z',updatedAt:null,assignee:'Kumar, A.', status:'open',     pscLinked:false},
+  {id:6, system:'Safety',       component:'CO2 System Valve #3',     desc:'Release valve stiff during weekly test. Cleaned and exercised. Re-test scheduled 48h.',           priority:'medium',  loggedAt:'2026-07-20T13:00:00Z',updatedAt:null,assignee:'Nair, S.', status:'wip',      pscLinked:false},
+  {id:7, system:'Navigation',   component:'ECDIS Chart Update',      desc:'Four ENCs not current (North Sea folio). C-Map AVCS update pending — ETA Rotterdam.',             priority:'medium',  loggedAt:'2026-07-22T07:00:00Z',updatedAt:null,assignee:'Chen, W.', status:'wip',      pscLinked:false},
+  {id:8, system:'Engine Room',  component:'Oily Water Separator',    desc:'OWS 15ppm bilge alarm intermittent. Sensor suspected. MARPOL non-compliance risk. Investigating.', priority:'critical',loggedAt:'2026-07-21T15:00:00Z',updatedAt:null,assignee:'Nguyen, V.',status:'open',    pscLinked:true },
+  {id:9, system:'Deck',         component:'Lifeboat Davit Wire',     desc:'Port lifeboat davit wire showing grease cracking. Annual inspection due in 6 days.',               priority:'high',    loggedAt:'2026-07-19T09:00:00Z',updatedAt:null,assignee:'Reyes, D.',status:'spare_req',pscLinked:false},
+  {id:10,system:'Cargo',        component:'Stripping Pump Seal',     desc:'Minor drip from mechanical seal on port stripping pump. Within tolerance. Logged for monitoring.', priority:'low',     loggedAt:'2026-07-17T10:00:00Z',updatedAt:null,assignee:'Ahuja, R.', status:'open',     pscLinked:false},
+  {id:11,system:'Safety',       component:'Immersion Suit — OS Petrov',desc:'Zipper stiff on immersion suit. Suit functional but needs servicing at next opportunity.',       priority:'low',     loggedAt:'2026-07-16T14:00:00Z',updatedAt:null,assignee:'Santos, J.',status:'open',    pscLinked:false},
+  {id:12,system:'Deck',         component:'Mooring Rope — Port Stern',desc:'#3 mooring rope shows excessive wear at drum contact. Replace at Rotterdam. Safe for current ops.',priority:'medium',  loggedAt:'2026-07-12T11:00:00Z',updatedAt:null,assignee:'Park, S.', status:'open',     pscLinked:false},
 ];
 
 const SCHEDULED_JOBS = [
-  {id:1,system:'Main Engine',job:'ME Cylinder Head Inspection',interval:'4,000 RH',due:'Overdue 220 RH',urgent:true},
-  {id:2,system:'Auxiliary',  job:'AE1 Governor Service',       interval:'6,000 RH',due:'In 90 RH',      urgent:true},
-  {id:3,system:'Safety',     job:'Liferaft Annual Inspection', interval:'Annual',  due:'In 6 days',     urgent:true},
-  {id:4,system:'Deck',       job:'Anchor Chain Inspection',    interval:'Annual',  due:'In 42 days',    urgent:false},
+  {id:1, system:'Main Engine', job:'ME Cylinder Head Inspection',       interval:'4,000 RH', due:'Overdue 60 RH — DPA risk assessment approved', urgent:true},
+  {id:2, system:'Auxiliary',   job:'AE1 Governor Service',              interval:'6,000 RH', due:'In 90 RH',                                      urgent:true},
+  {id:3, system:'Safety',      job:'Liferaft Annual Inspection',        interval:'Annual',   due:'In 6 days',                                     urgent:true},
+  {id:4, system:'Safety',      job:'Immersion Suit Annual Inspection',  interval:'Annual',   due:'Overdue 3 days',                                urgent:true},
+  {id:5, system:'Safety',      job:'Lifeboat Engine Test',              interval:'Weekly',   due:'Due today',                                     urgent:true},
+  {id:6, system:'Safety',      job:'CO2 Fixed System Annual Inspection',interval:'Annual',   due:'In 12 days',                                    urgent:true},
+  {id:7, system:'Navigation',  job:'Magnetic Compass Deviation Card',   interval:'Annual',   due:'In 8 days',                                     urgent:true},
+  {id:8, system:'Main Engine', job:'ME Turbocharger Service',           interval:'16,000 RH',due:'In 480 RH',                                    urgent:false},
+  {id:9, system:'Auxiliary',   job:'AE2 Fuel Injection Pump Service',   interval:'8,000 RH', due:'In 320 RH',                                    urgent:false},
+  {id:10,system:'Deck',        job:'Anchor Chain Inspection',           interval:'Annual',   due:'In 42 days',                                    urgent:false},
 ];
 
 const SPARES_ROB = [
@@ -556,9 +647,11 @@ const BiometricModal = ({title,onSuccess,onCancel}) => {
 // ═══════════════════════════════════════════════════════
 // DECK LOG MODAL
 // ═══════════════════════════════════════════════════════
+const LOG_CATEGORIES = ['Position Report','Watch Handover','Engine Movement','Incident','Drill Record','Port Entry / Departure','Cargo Operation','Weather Observation','Other'];
 const DeckLogModal = ({onSave,onCancel}) => {
   const {currentUser,vessel} = useApp();
   const [text,setText]         = useState('');
+  const [category,setCategory] = useState('Position Report');
   const [listening,setListening] = useState(false);
   const [hasSR,setHasSR]       = useState(false);
   const recognitionRef         = useRef(null);
@@ -586,7 +679,7 @@ const DeckLogModal = ({onSave,onCancel}) => {
   const save = () => {
     if(!text.trim()) return;
     recognitionRef.current?.stop();
-    onSave({ text:text.trim(), timestamp:utcNow(), author:currentUser?.label||'Officer', vessel:vessel?.name });
+    onSave({ text:text.trim(), category, timestamp:utcNow(), author:currentUser?.label||'Officer', vessel:vessel?.name });
   };
 
   return (
@@ -603,6 +696,19 @@ const DeckLogModal = ({onSave,onCancel}) => {
               <Mic size={19} color={listening?'#fff':T.text.muted} style={{animation:listening?'pulse 1s infinite':'none'}}/>
             </button>
           )}
+        </div>
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:6}}>Entry Category</label>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+            {LOG_CATEGORIES.map(cat=>(
+              <button key={cat} onClick={()=>setCategory(cat)}
+                style={{padding:'6px 12px',borderRadius:T.radius.pill,fontSize:11,fontWeight:600,cursor:'pointer',border:'none',transition:'all 0.15s',
+                  background:category===cat?T.accent.primary:T.bg.canvas,
+                  color:category===cat?'#fff':T.text.muted}}>
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
         {listening&&(
           <div style={{background:T.accent.soft,borderRadius:T.radius.sm,padding:'9px 14px',marginBottom:12,display:'flex',alignItems:'center',gap:8}}>
@@ -1135,7 +1241,7 @@ function BridgeViewWrapper() {
               <Stat label="STW"       value="13.1" unit="kts"/>
               <Stat label="Fwd Draft" value="13.42" unit="m"/>
               <Stat label="Aft Draft" value="13.78" unit="m"/>
-              <Stat label="GM (Calc)" value="1.84" unit="m" accent={T.accent.green}/>
+              <Stat label="GM (Loadicator)" value="1.84" unit="m" accent={T.accent.green}/>
               <Stat label="Trim"      value="0.36 A"/>
             </div>
           </Card>
@@ -1159,8 +1265,11 @@ function BridgeViewWrapper() {
             </Card>
           ):deckLog.map((entry,i)=>(
             <Card key={i} className="hover-card" style={{animation:`fadeUp 0.4s ease-out ${i*0.04}s both`}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
-                <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(entry.timestamp)}</p>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8,marginBottom:6}}>
+                <div>
+                  <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:'0 0 4px'}}>{utcFull(entry.timestamp)}</p>
+                  {entry.category&&<Badge label={entry.category} color={T.accent.primary} bg={T.accent.soft}/>}
+                </div>
                 <Badge label={entry.author} color={T.text.muted} bg={T.bg.surfaceAlt}/>
               </div>
               <p style={{fontSize:13,color:T.text.vessel,lineHeight:1.6,margin:0}}>{entry.text}</p>
@@ -1223,7 +1332,7 @@ const EngineView = () => {
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
               <Stat label="24h Consump" value="42.1" unit="MT"/>
               <Stat label="ROB VLSFO"   value="1,842" unit="MT"/>
-              <Stat label="ROB LSMGO"   value="124"   unit="MT"/>
+              <Stat label="ROB LSMGO"   value="285"   unit="MT"/>
               <Stat label="Daily Cost"  value="$27.3k" accent={T.accent.amber}/>
             </div>
           </Card>
@@ -1258,7 +1367,7 @@ const EngineView = () => {
           <Card className="hover-card">
             <CardHeader icon={Droplets} title="Boiler & Utilities"/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-              <Stat label="Steam Press" value="6.8" unit="bar"/>
+              <Stat label="Steam Press" value="8.2" unit="bar"/>
               <Stat label="Feed Temp"   value="108"  unit="°C"/>
               <Stat label="FW Gen"      value="18"   unit="MT/day" accent={T.accent.green}/>
               <Stat label="FW Tank"     value="84"   unit="%" accent={T.accent.green}/>
@@ -1274,36 +1383,145 @@ const EngineView = () => {
 const CrewView = () => {
   const {currentUser,scrollH,lang} = useApp();
   const restricted = currentUser?.restricted;
+  const [crewSub,setCrewSub] = useState('roster');
   const depts = [...new Set(FULL_CREW.map(c=>c.dept))];
+  const today = new Date();
+  const certStatus = cert => {
+    const exp = new Date(cert.expires);
+    const days = Math.round((exp-today)/(1000*60*60*24));
+    if(days<0)  return {label:'EXPIRED',  color:T.accent.coral, bg:'rgba(255,90,95,0.15)'};
+    if(days<60) return {label:'EXPIRING', color:T.accent.amber, bg:'rgba(255,176,23,0.15)'};
+    return        {label:'VALID',    color:T.accent.green, bg:'rgba(0,229,143,0.12)'};
+  };
+  const restStatus = hrs => {
+    const total = hrs.reduce((a,b)=>a+b,0);
+    const minDay = Math.min(...hrs);
+    if(total < 77 || minDay < 10) return {label:'NON-COMPLIANT', color:T.accent.coral, ok:false};
+    if(total < 80 || minDay ===10) return {label:'WARNING',       color:T.accent.amber, ok:false};
+    return {label:'COMPLIANT', color:T.accent.green, ok:true};
+  };
+  const days7 = Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-6+i);return d.toISOString().slice(5,10);});
+
   return (
     <main aria-label="Crew" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Λίστα Πληρώματος':'Crew Roster'}</h1>
-        <p style={{fontSize:13,color:T.text.muted,margin:0}}>{FULL_CREW.length} POB · STCW compliant</p>
+        <p style={{fontSize:13,color:T.text.muted,margin:0}}>{FULL_CREW.length} POB</p>
       </header>
-      {depts.map(dept=>(
-        <Card key={dept}>
-          <CardHeader title={dept}/>
-          {FULL_CREW.filter(c=>c.dept===dept).map((c,i,arr)=>(
-            <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 0',borderBottom:i<arr.length-1?`1px solid ${T.bg.canvas}`:'none',animation:`fadeUp 0.4s ease-out ${i*0.04}s both`}}>
-              <div style={{display:'flex',gap:12,alignItems:'center'}}>
-                <div className="hover-avatar" style={{width:34,height:34,borderRadius:'50%',background:T.accent.soft,color:T.accent.primary,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',fontSize:12,flexShrink:0}}>
-                  {c.name.charAt(0)}
+      <SubTabs tabs={['roster','hours','certs']} active={crewSub} setActive={setCrewSub}
+        labels={lang==='el'?{roster:'Λίστα',hours:'Ώρες',certs:'Πιστοπ.'}:{}}/>
+
+      {crewSub==='roster'&&<>
+        {depts.map(dept=>(
+          <Card key={dept}>
+            <CardHeader title={dept}/>
+            {FULL_CREW.filter(c=>c.dept===dept).map((c,i,arr)=>(
+              <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 0',borderBottom:i<arr.length-1?`1px solid ${T.bg.canvas}`:'none',animation:`fadeUp 0.4s ease-out ${i*0.04}s both`}}>
+                <div style={{display:'flex',gap:12,alignItems:'center'}}>
+                  <div className="hover-avatar" style={{width:34,height:34,borderRadius:'50%',background:T.accent.soft,color:T.accent.primary,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',fontSize:12,flexShrink:0}}>
+                    {c.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p style={{fontSize:13,fontWeight:600,margin:0,color:T.text.vessel}}>{c.name}</p>
+                    <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
+                  </div>
                 </div>
-                <div>
-                  <p style={{fontSize:13,fontWeight:600,margin:0,color:T.text.vessel}}>{c.name}</p>
-                  <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
-                </div>
+                {!restricted&&<Badge label="ON BOARD" color={T.accent.green} bg="rgba(0,229,143,0.1)"/>}
               </div>
-              {!restricted&&<Badge label="ON BOARD" color={T.accent.green} bg="rgba(0,229,143,0.1)"/>}
+            ))}
+          </Card>
+        ))}
+        {restricted&&(
+          <div style={{background:'rgba(255,176,23,0.08)',border:`1px solid rgba(255,176,23,0.25)`,borderRadius:T.radius.sm,padding:'14px',display:'flex',gap:10,alignItems:'flex-start'}}>
+            <AlertTriangle size={14} color={T.accent.amber} style={{flexShrink:0,marginTop:1}}/>
+            <p style={{fontSize:12,color:T.accent.amber,margin:0,lineHeight:1.5}}>Detailed crew data visible to Officers only. Contact Master for full roster access.</p>
+          </div>
+        )}
+      </>}
+
+      {crewSub==='hours'&&!restricted&&(
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          <Card style={{padding:'12px 16px'}}>
+            <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:4}}>
+              <AlertTriangle size={13} color={T.accent.amber}/>
+              <span style={{fontSize:11,fontWeight:700,color:T.accent.amber}}>STCW REQUIREMENT</span>
             </div>
-          ))}
-        </Card>
-      ))}
-      {restricted&&(
+            <p style={{fontSize:12,color:T.text.muted,margin:0,lineHeight:1.5}}>Min <b style={{color:T.text.vessel}}>10h rest</b> per 24h period · Min <b style={{color:T.text.vessel}}>77h rest</b> per 7-day period · Rest may be split into max 2 periods (one ≥6h)</p>
+          </Card>
+          {/* Day headers */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr repeat(7,28px) 40px',gap:4,alignItems:'center',padding:'0 4px'}}>
+            <span style={{fontSize:10,color:T.text.faint}}>Officer</span>
+            {days7.map(d=><span key={d} style={{fontSize:8,color:T.text.faint,textAlign:'center',fontFamily:'monospace'}}>{d.slice(3)}</span>)}
+            <span style={{fontSize:10,color:T.text.faint,textAlign:'center'}}>7d</span>
+          </div>
+          {REST_HOURS_7D.map((row,i)=>{
+            const st = restStatus(row.hours);
+            const total = row.hours.reduce((a,b)=>a+b,0);
+            return (
+              <Card key={row.id} className="hover-card" style={{animation:`fadeUp 0.4s ease-out ${i*0.05}s both`,border:st.ok?'none':`1px solid ${st.color}44`}}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr repeat(7,28px) 40px',gap:4,alignItems:'center'}}>
+                  <div>
+                    <p style={{fontSize:12,fontWeight:700,color:T.text.vessel,margin:0}}>{row.name}</p>
+                    <p style={{fontSize:10,color:T.text.muted,margin:'1px 0 0'}}>{row.rank}</p>
+                  </div>
+                  {row.hours.map((h,j)=>(
+                    <div key={j} style={{width:28,height:28,borderRadius:8,background:h<10?'rgba(255,90,95,0.2)':h<=10?'rgba(255,176,23,0.15)':T.bg.canvas,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <span style={{fontSize:10,fontWeight:700,fontFamily:'monospace',color:h<10?T.accent.coral:h<=10?T.accent.amber:T.text.muted}}>{h}</span>
+                    </div>
+                  ))}
+                  <div style={{textAlign:'center'}}>
+                    <span style={{fontSize:11,fontWeight:800,fontFamily:'monospace',color:st.color}}>{total}</span>
+                  </div>
+                </div>
+                <div style={{marginTop:8,display:'flex',justifyContent:'flex-end'}}>
+                  <Badge label={st.label} color={st.color} bg={`${st.color}22`}/>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {crewSub==='certs'&&!restricted&&(
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {Object.entries(CREW_CERTS).map(([id,certs])=>{
+            const crewMember = FULL_CREW.find(c=>c.id===Number(id));
+            const hasIssue = certs.some(c=>c.status!=='valid');
+            return (
+              <Card key={id} className="hover-card" style={{border:hasIssue?`1px solid ${T.accent.amber}44`:'none'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+                  <div>
+                    <p style={{fontSize:13,fontWeight:700,color:T.text.vessel,margin:0}}>{crewMember?.name}</p>
+                    <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{crewMember?.rank}</p>
+                  </div>
+                  {hasIssue&&<AlertTriangle size={15} color={T.accent.amber}/>}
+                </div>
+                {certs.map((cert,i)=>{
+                  const st = certStatus(cert);
+                  const exp = new Date(cert.expires);
+                  const days = Math.round((exp-today)/(1000*60*60*24));
+                  return (
+                    <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'9px 0',borderTop:i>0?`1px solid ${T.bg.canvas}`:'none',gap:8}}>
+                      <div style={{flex:1}}>
+                        <p style={{fontSize:12,fontWeight:600,color:T.text.vessel,margin:0,lineHeight:1.4}}>{cert.type}</p>
+                        <p style={{fontSize:10,fontFamily:'monospace',color:T.text.faint,margin:'3px 0 0'}}>
+                          Expires {cert.expires}{days<0?` (${Math.abs(days)}d ago)`:days<60?` (${days}d)`:''}
+                        </p>
+                      </div>
+                      <Badge label={st.label} color={st.color} bg={st.bg}/>
+                    </div>
+                  );
+                })}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {restricted&&crewSub!=='roster'&&(
         <div style={{background:'rgba(255,176,23,0.08)',border:`1px solid rgba(255,176,23,0.25)`,borderRadius:T.radius.sm,padding:'14px',display:'flex',gap:10,alignItems:'flex-start'}}>
           <AlertTriangle size={14} color={T.accent.amber} style={{flexShrink:0,marginTop:1}}/>
-          <p style={{fontSize:12,color:T.accent.amber,margin:0,lineHeight:1.5}}>Detailed crew data visible to Officers only. Contact Master for full roster access.</p>
+          <p style={{fontSize:12,color:T.accent.amber,margin:0,lineHeight:1.5}}>STCW and certificate data visible to Officers only.</p>
         </div>
       )}
     </main>
@@ -1517,7 +1735,7 @@ const OpsView = () => {
   const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,currentUser,scrollH,lang} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
-  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',remarks:''});
+  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',avgSpeed:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meHours:'',etaNext:'',voyageNo:'',remarks:''});
   const [liveTime, setLiveTime] = useState(utcTime());
   useEffect(()=>{ const id=setInterval(()=>setLiveTime(utcTime()),1000); return()=>clearInterval(id); },[]);
   const [noonListening, setNoonListening] = useState(false);
@@ -1615,8 +1833,45 @@ const OpsView = () => {
             <>
               <Card>
                 <CardHeader icon={FileText} title="Noon Report"/>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                  {[{k:'lat',l:'Latitude',ph:'24°32.1N'},{k:'lon',l:'Longitude',ph:'057°18.4E'},{k:'distRun',l:'Dist Run (NM)',ph:'312'},{k:'distToGo',l:'Dist to Go',ph:'3,888'},{k:'meConsump',l:'Consump (MT)',ph:'42.1'},{k:'rob',l:'ROB (MT)',ph:'1,842'}].map(({k,l,ph})=>(
+                <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'9px 12px',marginBottom:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span style={{fontSize:11,fontWeight:600,color:T.text.muted}}>Position Time</span>
+                  <span style={{fontSize:12,fontWeight:700,fontFamily:'monospace',color:T.text.vessel}}>12:00 UTC — {utcDate()}</span>
+                </div>
+                <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Position & Distance</p>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+                  {[{k:'voyageNo',l:'Voyage No.',ph:'2026-07'},
+                    {k:'avgSpeed',l:'Avg Speed (kts)',ph:'13.2'},
+                    {k:'lat',l:'Latitude',ph:'24°32.1N'},
+                    {k:'lon',l:'Longitude',ph:'057°18.4E'},
+                    {k:'distRun',l:'Dist Run (NM)',ph:'312'},
+                    {k:'distToGo',l:'Dist to Go (NM)',ph:'3,888'}
+                  ].map(({k,l,ph})=>(
+                    <div key={k}>
+                      <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>{l}</label>
+                      <input value={noonForm[k]} onChange={e=>setNoonForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
+                    </div>
+                  ))}
+                </div>
+                <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Weather & Sea State</p>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+                  {[{k:'windBft',l:'Wind (Beaufort)',ph:'5'},
+                    {k:'seaState',l:'Sea State (Douglas)',ph:'3'},
+                    {k:'swellDir',l:'Swell Direction',ph:'NW'},
+                    {k:'etaNext',l:'ETA Next Port (UTC)',ph:'2026-08-06 08:00'}
+                  ].map(({k,l,ph})=>(
+                    <div key={k}>
+                      <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>{l}</label>
+                      <input value={noonForm[k]} onChange={e=>setNoonForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
+                    </div>
+                  ))}
+                </div>
+                <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Fuel & Cargo</p>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+                  {[{k:'meConsump',l:'ME Consump (MT)',ph:'42.1'},
+                    {k:'rob',l:'ROB VLSFO (MT)',ph:'1,842'},
+                    {k:'meHours',l:'ME Hours (24h)',ph:'24.0'},
+                    {k:'cargoOb',l:'Cargo on Board (MT)',ph:'298,450'}
+                  ].map(({k,l,ph})=>(
                     <div key={k}>
                       <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>{l}</label>
                       <input value={noonForm[k]} onChange={e=>setNoonForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
@@ -1648,18 +1903,33 @@ const OpsView = () => {
       )}
 
       {opsSub==='muster'&&(
-        <Card style={{animation:'fadeUp 0.4s ease-out'}}>
-          <CardHeader icon={Users} title={`Muster List — ${FULL_CREW.length} POB`}/>
-          {FULL_CREW.map((c,i)=>(
-            <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'11px 0',borderBottom:i<FULL_CREW.length-1?`1px solid ${T.bg.canvas}`:'none'}}>
-              <div>
-                <p style={{fontSize:13,fontWeight:600,margin:0,color:T.text.vessel}}>{c.name}</p>
-                <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
+        <div style={{display:'flex',flexDirection:'column',gap:14,animation:'fadeUp 0.4s ease-out'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            {['A','B'].map(stn=>(
+              <Card key={stn} style={{background:stn==='A'?'rgba(82,78,250,0.08)':'rgba(18,212,255,0.08)',border:`1px solid ${stn==='A'?T.accent.primary:T.accent.cyan}33`}}>
+                <p style={{fontSize:11,fontWeight:700,color:stn==='A'?T.accent.primary:T.accent.cyan,margin:'0 0 4px',letterSpacing:'0.06em'}}>STATION {stn}</p>
+                <p style={{fontSize:10,color:T.text.muted,margin:0}}>{stn==='A'?'Stbd Lifeboat #1':'Port Lifeboat #2'}</p>
+                <p style={{fontSize:18,fontWeight:800,color:T.text.vessel,margin:'6px 0 0'}}>{FULL_CREW.filter(c=>c.station===stn).length} crew</p>
+              </Card>
+            ))}
+          </div>
+          <Card>
+            <CardHeader icon={Users} title={`Muster List — ${FULL_CREW.length} POB`}/>
+            {FULL_CREW.map((c,i)=>(
+              <div key={c.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:i<FULL_CREW.length-1?`1px solid ${T.bg.canvas}`:'none'}}>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:13,fontWeight:600,margin:0,color:T.text.vessel}}>{c.name}</p>
+                  <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.rank}</p>
+                  <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0',fontStyle:'italic'}}>{c.duty} · {c.lsa}</p>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4,flexShrink:0}}>
+                  <Badge label={`STN ${c.station}`} color={c.station==='A'?T.accent.primary:T.accent.cyan} bg={c.station==='A'?'rgba(82,78,250,0.15)':'rgba(18,212,255,0.12)'}/>
+                  <Badge label="ON BOARD" color={T.accent.green} bg="rgba(0,229,143,0.1)"/>
+                </div>
               </div>
-              <Badge label="ON BOARD" color={T.accent.green} bg="rgba(0,229,143,0.1)"/>
-            </div>
-          ))}
-        </Card>
+            ))}
+          </Card>
+        </div>
       )}
     </main>
   );
