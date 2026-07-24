@@ -1259,6 +1259,25 @@ const MaintenanceView = () => {
   const [newDef,      setNewDef]      = useState({system:'',component:'',desc:'',priority:'medium',assignee:''});
   const [formError,   setFormError]   = useState('');
   const inputStyle = {background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'13px',color:T.text.main,fontSize:13,width:'100%'};
+  const [defListening, setDefListening] = useState(false);
+  const [defHasSR,     setDefHasSR]     = useState(false);
+  const defRecRef  = useRef(null);
+  const defMounted = useRef(true);
+  useEffect(()=>{
+    setDefHasSR(!!(window.SpeechRecognition||window.webkitSpeechRecognition));
+    return()=>{ defMounted.current=false; defRecRef.current?.stop(); };
+  },[]);
+  const toggleDefSpeech = ()=>{
+    if(defListening){ defRecRef.current?.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR) return;
+    const r=new SR(); r.continuous=true; r.interimResults=false; r.lang='en-US';
+    r.onstart=()=>{ if(defMounted.current) setDefListening(true); };
+    r.onresult=e=>{ if(!defMounted.current) return; const t=Array.from(e.results).map(r=>r[0].transcript).join(' '); setNewDef(f=>({...f,desc:f.desc?f.desc+' '+t:t})); };
+    r.onerror=()=>{ if(defMounted.current) setDefListening(false); };
+    r.onend=()=>{ if(defMounted.current) setDefListening(false); };
+    defRecRef.current=r; r.start();
+  };
 
   const addDefect = () => {
     if(!newDef.component.trim()){ setFormError('Component is required'); return; }
@@ -1413,7 +1432,11 @@ const MaintenanceView = () => {
                 </select>
               </div>
               <div>
-                <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:6}}>Description</label>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                  <label style={{fontSize:11,fontWeight:600,color:T.text.muted}}>Description</label>
+                  {defHasSR&&<button onClick={toggleDefSpeech} aria-label={defListening?'Stop':'Dictate'} style={{width:32,height:32,borderRadius:T.radius.pill,background:defListening?T.accent.primary:T.bg.canvas,border:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',transition:'all 0.2s'}}><Mic size={14} color={defListening?'#fff':T.text.muted} style={{animation:defListening?'pulse 1s infinite':'none'}}/></button>}
+                </div>
+                {defListening&&<div style={{background:T.accent.soft,borderRadius:T.radius.sm,padding:'7px 12px',marginBottom:8,display:'flex',alignItems:'center',gap:8}}><div style={{width:5,height:5,borderRadius:'50%',background:T.accent.primary,animation:'pulse 1s infinite'}}/><span style={{fontSize:11,color:T.accent.primary,fontWeight:600}}>Listening…</span></div>}
                 <textarea value={newDef.desc} onChange={e=>setNewDef(f=>({...f,desc:e.target.value}))} placeholder="Describe the defect…" rows={3} style={{...inputStyle,resize:'none'}}/>
               </div>
               {formError&&<p style={{fontSize:12,color:T.accent.coral,margin:0}}>{formError}</p>}
@@ -1437,6 +1460,25 @@ const OpsView = () => {
   const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',remarks:''});
   const [liveTime, setLiveTime] = useState(utcTime());
   useEffect(()=>{ const id=setInterval(()=>setLiveTime(utcTime()),1000); return()=>clearInterval(id); },[]);
+  const [noonListening, setNoonListening] = useState(false);
+  const [noonHasSR,     setNoonHasSR]     = useState(false);
+  const noonRecRef  = useRef(null);
+  const noonMounted = useRef(true);
+  useEffect(()=>{
+    setNoonHasSR(!!(window.SpeechRecognition||window.webkitSpeechRecognition));
+    return()=>{ noonMounted.current=false; noonRecRef.current?.stop(); };
+  },[]);
+  const toggleNoonSpeech = ()=>{
+    if(noonListening){ noonRecRef.current?.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR) return;
+    const r=new SR(); r.continuous=true; r.interimResults=false; r.lang='en-US';
+    r.onstart=()=>{ if(noonMounted.current) setNoonListening(true); };
+    r.onresult=e=>{ if(!noonMounted.current) return; const t=Array.from(e.results).map(r=>r[0].transcript).join(' '); setNoonForm(f=>({...f,remarks:f.remarks?f.remarks+' '+t:t})); };
+    r.onerror=()=>{ if(noonMounted.current) setNoonListening(false); };
+    r.onend=()=>{ if(noonMounted.current) setNoonListening(false); };
+    noonRecRef.current=r; r.start();
+  };
 
   const pscDone   = pscItems.filter(x=>x.done).length;
   const togglePsc = id => setPscItems(items=>items.map(item=>item.id===id?{...item,done:!item.done}:item));
@@ -1522,7 +1564,11 @@ const OpsView = () => {
                   ))}
                 </div>
                 <div>
-                  <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>Remarks</label>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+                    <label style={{fontSize:11,fontWeight:600,color:T.text.muted}}>Remarks</label>
+                    {noonHasSR&&<button onClick={toggleNoonSpeech} aria-label={noonListening?'Stop':'Dictate remarks'} style={{width:32,height:32,borderRadius:T.radius.pill,background:noonListening?T.accent.primary:T.bg.canvas,border:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',transition:'all 0.2s'}}><Mic size={14} color={noonListening?'#fff':T.text.muted} style={{animation:noonListening?'pulse 1s infinite':'none'}}/></button>}
+                  </div>
+                  {noonListening&&<div style={{background:T.accent.soft,borderRadius:T.radius.sm,padding:'7px 12px',marginBottom:8,display:'flex',alignItems:'center',gap:8}}><div style={{width:5,height:5,borderRadius:'50%',background:T.accent.primary,animation:'pulse 1s infinite'}}/><span style={{fontSize:11,color:T.accent.primary,fontWeight:600}}>Listening…</span></div>}
                   <textarea value={noonForm.remarks} onChange={e=>setNoonForm(f=>({...f,remarks:e.target.value}))} placeholder="Any observations…" rows={3} style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%',resize:'none'}}/>
                 </div>
               </Card>
