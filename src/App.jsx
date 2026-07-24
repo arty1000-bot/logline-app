@@ -153,7 +153,7 @@ const FULL_CREW = [
   {id:14,name:'Kumar, A.',    rank:'2nd Engineer',      dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Engine Room Shutdown'},
   {id:15,name:'Nguyen, V.',   rank:'3rd Engineer',      dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Fire Team B — Engine'},
   {id:16,name:'Osei, K.',     rank:'4th Engineer',      dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Team A — Engine'},
-  {id:17,name:'Tanaka, H.',   rank:'Electrical Officer',dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Emergency Generator'},
+  {id:17,name:'Tanaka, H.',   rank:'Electrical Officer',dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Lifeboat B — Electrical Systems'},
   {id:18,name:'Mbeki, S.',    rank:'Fitter',            dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Team A'},
   {id:19,name:'Lim, J.',      rank:'Motorman',          dept:'Engine',   station:'B',lsa:'Port Lifeboat #2', duty:'Fire Pump Operator'},
   {id:20,name:'Hassan, M.',   rank:'Motorman',          dept:'Engine',   station:'A',lsa:'Stbd Lifeboat #1',duty:'Fire Pump Operator'},
@@ -2151,6 +2151,7 @@ const OpsView = () => {
   const pscExpiredCerts  = Object.values(CREW_CERTS).flat().some(c=>new Date(c.expires)<today_d);
   const pscRestViolation = REST_HOURS_7D.some(row=>Math.min(...row.hours)<10||row.hours.reduce((a,b)=>a+b,0)<77);
   const pscLinkedDefects = DEFECTS_SEED.filter(d=>d.pscLinked&&d.status!=='closed');
+  const pscImmersionOverdue = SCHEDULED_JOBS.some(j=>j.job.toLowerCase().includes('immersion')&&j.due.includes('OVERDUE'));
 
   const togglePsc = id => setPscItems(items=>items.map(item=>{
     if(item.id!==id) return item;
@@ -2215,6 +2216,9 @@ const OpsView = () => {
                 )}
                 {item.id===22&&pscExpiredCerts&&(
                   <span style={{fontSize:10,color:T.accent.coral,display:'block',marginTop:3,fontWeight:600}}>⚠ Expired certificates exist in crew data — verify Crew tab before ticking</span>
+                )}
+                {item.id===16&&pscImmersionOverdue&&(
+                  <span style={{fontSize:10,color:T.accent.coral,display:'block',marginTop:3,fontWeight:600}}>⚠ Immersion suit annual inspection is OVERDUE — detainable PSC deficiency</span>
                 )}
               </div>
             </button>
@@ -2335,12 +2339,20 @@ const OpsView = () => {
                     {k:'lon',l:'Longitude',ph:'057°18.4E'},
                     {k:'distRun',l:'Dist Run (NM)',ph:'312'},
                     {k:'distToGo',l:'Dist to Go (NM)',ph:'3,888'}
-                  ].map(({k,l,ph})=>(
+                  ].map(({k,l,ph})=>{
+                    const isPos = k==='lat'||k==='lon';
+                    const posOk = !isPos||!noonForm[k]||isValidPosition(
+                      k==='lat'?noonForm[k]:noonForm.lat,
+                      k==='lon'?noonForm[k]:noonForm.lon
+                    );
+                    return (
                     <div key={k}>
                       <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>{l}</label>
-                      <input value={noonForm[k]} onChange={e=>setNoonForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
+                      <input value={noonForm[k]} onChange={e=>setNoonForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{background:T.bg.canvas,border:`1px solid ${isPos&&noonForm[k]&&!posOk?T.accent.coral:'transparent'}`,borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
+                      {isPos&&noonForm[k]&&!posOk&&<p style={{fontSize:9,color:T.accent.coral,margin:'3px 0 0'}}>Format: 24°32.1N / 057°18.4E</p>}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Weather & Sea State</p>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
@@ -2512,8 +2524,8 @@ const ShoreMarketView = () => {
             <span style={{fontSize:11,color:T.accent.coral,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.06em'}}>Hormuz Closure Alert</span>
             <div style={{marginLeft:'auto',width:6,height:6,borderRadius:'50%',background:T.accent.coral,animation:'pulse 1.5s infinite'}}/>
           </div>
-          <p style={{fontFamily:'monospace',fontSize:28,color:T.text.data,fontWeight:700,letterSpacing:'-0.03em',margin:'0 0 4px'}}>{fmtUSD(1425000)}</p>
-          <p style={{fontSize:12,color:T.text.muted,margin:0}}>Est. fleet demurrage — indicative only</p>
+          <p style={{fontFamily:'monospace',fontSize:28,color:T.text.data,fontWeight:700,letterSpacing:'-0.03em',margin:'0 0 4px'}}>~{fmtUSD(1400000)}</p>
+          <p style={{fontSize:12,color:T.text.muted,margin:0}}>Rough scenario estimate — illustrative only, not a live calculation</p>
         </section>
       )}
       <Card className="hover-card">
