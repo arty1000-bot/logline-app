@@ -117,7 +117,7 @@ const PORT_COORDS = {
 // SEED DATA
 // ═══════════════════════════════════════════════════════
 const GLOBAL_PORTS = [
-  {id:'NLRTM',name:'Rotterdam',    country:'Netherlands',  region:'Europe',        dist:4200, etaDays:14,  wind:'NW 15kt',swell:'1.2m',blocked:false,hra:false},
+  {id:'NLRTM',name:'Rotterdam',    country:'Netherlands',  region:'Europe',        dist:4200, etaDays:13,  wind:'NW 15kt',swell:'1.2m',blocked:false,hra:false},
   {id:'SGSIN',name:'Singapore',    country:'Singapore',    region:'Asia',          dist:3100, etaDays:10,  wind:'NE 8kt', swell:'0.5m',blocked:false,hra:false},
   {id:'USLGB',name:'Long Beach',   country:'USA',          region:'N. America',    dist:8200, etaDays:27,  wind:'W 10kt', swell:'1.8m',blocked:false,hra:false},
   {id:'AEJEA',name:'Jebel Ali',    country:'UAE',          region:'Gulf',          dist:400,  etaDays:1.5, wind:'NW 5kt', swell:'0.2m',blocked:true, hra:true, alert:'HORMUZ BLOCKADE'},
@@ -282,13 +282,13 @@ const DEFECTS_SEED = [
 ];
 
 const SCHEDULED_JOBS = [
-  {id:1, system:'Main Engine', job:'ME Cylinder Head Inspection',       interval:'4,000 RH', due:'Overdue 60 RH — DPA risk assessment approved', urgent:true},
-  {id:2, system:'Auxiliary',   job:'AE1 Governor Service',              interval:'6,000 RH', due:'In 90 RH',                                      urgent:true},
+  {id:4, system:'Safety',      job:'Immersion Suit Annual Inspection',  interval:'Annual',   due:'OVERDUE 3 days — detainable PSC deficiency',   urgent:true},
+  {id:1, system:'Main Engine', job:'ME Cylinder Head Inspection',       interval:'4,000 RH', due:'OVERDUE 60 RH — DPA risk assessment approved', urgent:true},
+  {id:5, system:'Safety',      job:'Lifeboat Engine Test',              interval:'Weekly',   due:'DUE TODAY',                                     urgent:true},
   {id:3, system:'Safety',      job:'Liferaft Annual Inspection',        interval:'Annual',   due:'In 6 days',                                     urgent:true},
-  {id:4, system:'Safety',      job:'Immersion Suit Annual Inspection',  interval:'Annual',   due:'Overdue 3 days',                                urgent:true},
-  {id:5, system:'Safety',      job:'Lifeboat Engine Test',              interval:'Weekly',   due:'Due today',                                     urgent:true},
-  {id:6, system:'Safety',      job:'CO2 Fixed System Annual Inspection',interval:'Annual',   due:'In 12 days',                                    urgent:true},
   {id:7, system:'Navigation',  job:'Magnetic Compass Deviation Card',   interval:'Annual',   due:'In 8 days',                                     urgent:true},
+  {id:6, system:'Safety',      job:'CO2 Fixed System Annual Inspection',interval:'Annual',   due:'In 12 days',                                    urgent:true},
+  {id:2, system:'Auxiliary',   job:'AE1 Governor Service',              interval:'6,000 RH', due:'In 90 RH',                                      urgent:false},
   {id:8, system:'Main Engine', job:'ME Turbocharger Service',           interval:'16,000 RH',due:'In 480 RH',                                    urgent:false},
   {id:9, system:'Auxiliary',   job:'AE2 Fuel Injection Pump Service',   interval:'8,000 RH', due:'In 320 RH',                                    urgent:false},
   {id:10,system:'Deck',        job:'Anchor Chain Inspection',           interval:'Annual',   due:'In 42 days',                                    urgent:false},
@@ -310,28 +310,28 @@ const SPARES_ROB = [
 const CARGO_GRADE = {
   name:'Iranian Heavy Crude (IHC)',
   api:27.4,
-  density:0.890,
+  density:0.8913,
   loadPort:'Kharg Island, Iran',
   blDate:'2026-07-09',
   tempSetpoint:58,
 };
 
 const CARGO_TANKS = [
-  {id:1,  name:'No.1 CTR',  capCbm:36000, ullage:0.62, temp:58.2, pct:98.4, mt:31580, o2:2.1},
-  {id:2,  name:'No.2 CTR',  capCbm:36000, ullage:0.71, temp:57.9, pct:98.2, mt:31530, o2:2.4},
-  {id:3,  name:'No.3 CTR',  capCbm:37600, ullage:0.58, temp:58.5, pct:98.6, mt:33020, o2:2.0},
-  {id:4,  name:'No.4 CTR',  capCbm:36000, ullage:0.65, temp:57.4, pct:98.3, mt:31550, o2:2.2},
-  {id:5,  name:'No.5 CTR',  capCbm:36000, ullage:0.90, temp:57.1, pct:97.7, mt:31340, o2:2.6},
-  {id:6,  name:'No.1 PORT', capCbm:17500, ullage:0.55, temp:58.1, pct:96.8, mt:15100, o2:2.3},
-  {id:7,  name:'No.1 STBD', capCbm:17500, ullage:0.52, temp:58.0, pct:97.0, mt:15130, o2:2.1},
-  {id:8,  name:'No.2 PORT', capCbm:17500, ullage:0.68, temp:57.6, pct:96.0, mt:14960, o2:2.4},
-  {id:9,  name:'No.2 STBD', capCbm:17500, ullage:0.72, temp:57.3, pct:95.8, mt:14925, o2:2.5},
-  {id:10, name:'No.3 PORT', capCbm:17500, ullage:0.70, temp:57.2, pct:95.9, mt:14942, o2:2.3},
-  {id:11, name:'No.3 STBD', capCbm:17500, ullage:0.69, temp:57.5, pct:96.0, mt:14960, o2:2.2},
-  {id:12, name:'No.4 PORT', capCbm:17500, ullage:0.58, temp:57.0, pct:96.6, mt:15065, o2:2.4},
-  {id:13, name:'No.4 STBD', capCbm:17500, ullage:0.60, temp:57.2, pct:96.4, mt:15030, o2:2.5},
+  {id:1,  name:'No.1 CTR',  capCbm:36000, ullage:1.00, temp:58.2, pct:95.0, mt:30580, o2:2.1},
+  {id:2,  name:'No.2 CTR',  capCbm:36000, ullage:1.16, temp:57.9, pct:94.5, mt:30420, o2:2.4},
+  {id:3,  name:'No.3 CTR',  capCbm:37600, ullage:0.80, temp:58.5, pct:96.0, mt:32160, o2:2.0},
+  {id:4,  name:'No.4 CTR',  capCbm:36000, ullage:1.08, temp:57.4, pct:95.2, mt:30660, o2:2.2},
+  {id:5,  name:'No.5 CTR',  capCbm:36000, ullage:1.24, temp:57.1, pct:94.0, mt:30240, o2:2.6},
+  {id:6,  name:'No.1 PORT', capCbm:17500, ullage:0.52, temp:58.1, pct:94.8, mt:14780, o2:2.3},
+  {id:7,  name:'No.1 STBD', capCbm:17500, ullage:0.48, temp:58.0, pct:95.1, mt:14840, o2:2.1},
+  {id:8,  name:'No.2 PORT', capCbm:17500, ullage:0.62, temp:57.6, pct:94.2, mt:14690, o2:2.4},
+  {id:9,  name:'No.2 STBD', capCbm:17500, ullage:0.66, temp:57.3, pct:93.9, mt:14640, o2:3.4},
+  {id:10, name:'No.3 PORT', capCbm:17500, ullage:0.64, temp:57.2, pct:94.1, mt:14670, o2:2.3},
+  {id:11, name:'No.3 STBD', capCbm:17500, ullage:0.60, temp:57.5, pct:94.3, mt:14710, o2:2.2},
+  {id:12, name:'No.4 PORT', capCbm:17500, ullage:0.52, temp:57.0, pct:94.8, mt:14780, o2:2.4},
+  {id:13, name:'No.4 STBD', capCbm:17500, ullage:0.54, temp:57.2, pct:94.6, mt:14750, o2:2.5},
   {id:14, name:'SLOP PORT', capCbm:5000,  ullage:2.84, temp:52.0, pct:45.2, mt: 2010, o2:3.8},
-  {id:15, name:'SLOP STBD', capCbm:5000,  ullage:3.10, temp:51.5, pct:39.8, mt: 1775, o2:3.9},
+  {id:15, name:'SLOP STBD', capCbm:5000,  ullage:3.10, temp:51.5, pct:39.8, mt: 1775, o2:4.1},
 ];
 const CARGO_TOTAL_MT = CARGO_TANKS.reduce((s,t)=>s+t.mt,0);
 
@@ -404,6 +404,14 @@ const useApp = () => useContext(AppCtx);
 // ═══════════════════════════════════════════════════════
 const fmt    = n => new Intl.NumberFormat().format(n);
 const fmtUSD = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
+const daysSince = iso => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+const gmdssNextDue = item => {
+  const base = item.tested ? item.testedAt : item.lastTestedAt;
+  if(!base) return null;
+  const freqDays = item.freq==='Daily'?1 : item.freq==='Weekly'?7 : 30;
+  const due = new Date(new Date(base).getTime() + freqDays*86400000);
+  return Math.round((due - Date.now()) / 86400000);
+};
 const getETA = d => {
   const dt = new Date();
   dt.setUTCDate(dt.getUTCDate() + d);
@@ -1322,6 +1330,10 @@ function BridgeViewWrapper() {
                 <Edit3 size={13}/> Edit
               </button>
             </div>
+            <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'6px 10px',marginBottom:8,display:'flex',alignItems:'center',gap:6}}>
+              <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green,flexShrink:0}}/>
+              <span style={{fontSize:10,fontFamily:'monospace',color:T.text.muted}}>Position as of {liveWx ? utcTime() : utcTime()} UTC — GPS fix</span>
+            </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
               <Stat label="Latitude"  value={vessel.lat}/>
               <Stat label="Longitude" value={vessel.lon}/>
@@ -1389,8 +1401,8 @@ function BridgeViewWrapper() {
           <Card className="hover-card">
             <CardHeader icon={Wind} title={`Environment · ${liveWx?.place || `${vessel.lat} ${vessel.lon}`}${liveWx?' · Live':''}`}/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-              <Stat label="Wind"
-                    value={liveWx?.windSpeed!=null ? `${degToCompass(liveWx.windDir)} ${Math.round(liveWx.windSpeed)}` : activePort.wind}
+              <Stat label="Wind (True)"
+                    value={liveWx?.windSpeed!=null ? `${degToCompass(liveWx.windDir)}(T) ${Math.round(liveWx.windSpeed)}` : `${activePort.wind}(T)`}
                     unit={liveWx?.windSpeed!=null ? 'kt' : undefined}/>
               <Stat label={`Sea Ht · DS${liveWx?.wave!=null?waveToDouglas(liveWx.wave):3}`}
                     value={liveWx?.wave!=null ? liveWx.wave.toFixed(1) : '1.4'} unit="m"/>
@@ -1456,6 +1468,14 @@ function BridgeViewWrapper() {
           {/* Cargo grade summary */}
           <Card className="hover-card">
             <CardHeader icon={Droplets} title="Cargo Grade"/>
+            {CARGO_GRADE.loadPort.toLowerCase().includes('iran')&&(
+              <div style={{background:'rgba(255,90,95,0.08)',border:`1px solid rgba(255,90,95,0.4)`,borderRadius:T.radius.sm,padding:'10px 12px',display:'flex',gap:8,alignItems:'flex-start'}}>
+                <AlertTriangle size={13} color={T.accent.coral} style={{flexShrink:0,marginTop:1}}/>
+                <p style={{fontSize:11,color:T.accent.coral,margin:0,lineHeight:1.5,fontWeight:600}}>
+                  Iranian origin cargo — ensure OFAC/EU sanctions compliance is documented and company compliance officer has confirmed authorisation before this voyage proceeds.
+                </p>
+              </div>
+            )}
             <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:12}}>
               <Stat label="Grade"       value={CARGO_GRADE.name}/>
               <Stat label="API Gravity" value={`${CARGO_GRADE.api}°`}/>
@@ -1479,18 +1499,27 @@ function BridgeViewWrapper() {
               <Stat label="Deck Seal"   value={IG_STATUS.deckSeal}/>
               <Stat label="Alarm"       value={IG_STATUS.alarm}/>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:10}}>
-              <div style={{padding:'10px 14px',background:IG_STATUS.o2Outlet<5?'rgba(0,229,143,0.08)':'rgba(255,90,95,0.08)',borderRadius:T.radius.sm,textAlign:'center'}}>
-                <p style={{fontSize:11,color:T.text.muted,fontWeight:600,margin:'0 0 4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>O₂ Outlet</p>
-                <p style={{fontFamily:'monospace',fontSize:20,fontWeight:800,color:IG_STATUS.o2Outlet<5?T.accent.green:T.accent.coral,margin:0}}>{IG_STATUS.o2Outlet}%</p>
-                <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0'}}>Limit: &lt;5%</p>
-              </div>
-              <div style={{padding:'10px 14px',background:'rgba(0,229,143,0.08)',borderRadius:T.radius.sm,textAlign:'center'}}>
-                <p style={{fontSize:11,color:T.text.muted,fontWeight:600,margin:'0 0 4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Deck Pressure</p>
-                <p style={{fontFamily:'monospace',fontSize:20,fontWeight:800,color:T.accent.green,margin:0}}>{IG_STATUS.pressureMMWG}</p>
-                <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0'}}>mmWG (positive)</p>
-              </div>
-            </div>
+            {(()=>{
+              const o2 = IG_STATUS.o2Outlet;
+              const o2Color = o2<3?T.accent.green:o2<5?T.accent.amber:T.accent.coral;
+              const o2Bg    = o2<3?'rgba(0,229,143,0.08)':o2<5?'rgba(255,176,23,0.08)':'rgba(255,90,95,0.08)';
+              return (
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:10}}>
+                  <div style={{padding:'10px 14px',background:o2Bg,borderRadius:T.radius.sm,textAlign:'center'}}>
+                    <p style={{fontSize:11,color:T.text.muted,fontWeight:600,margin:'0 0 4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>O₂ Outlet</p>
+                    <p style={{fontFamily:'monospace',fontSize:20,fontWeight:800,color:o2Color,margin:0}}>{o2}%</p>
+                    <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0'}}>
+                      {o2<3?'Normal (<3%)':o2<5?'Monitor (3–5%)':'ALARM (≥5%)'}
+                    </p>
+                  </div>
+                  <div style={{padding:'10px 14px',background:'rgba(0,229,143,0.08)',borderRadius:T.radius.sm,textAlign:'center'}}>
+                    <p style={{fontSize:11,color:T.text.muted,fontWeight:600,margin:'0 0 4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Deck Pressure</p>
+                    <p style={{fontFamily:'monospace',fontSize:20,fontWeight:800,color:T.accent.green,margin:0}}>{IG_STATUS.pressureMMWG}</p>
+                    <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0'}}>mmWG · Max 2,000</p>
+                  </div>
+                </div>
+              );
+            })()}
           </Card>
 
           {/* Tank table */}
@@ -1509,7 +1538,7 @@ function BridgeViewWrapper() {
                 </thead>
                 <tbody>
                   {CARGO_TANKS.map((tk,i)=>{
-                    const igOk = tk.o2<5;
+                    const o2Color = tk.o2<3?T.accent.green:tk.o2<5?T.accent.amber:T.accent.coral;
                     return (
                       <tr key={tk.id} style={{borderBottom:`1px solid ${T.bg.canvas}`,background:i%2===0?T.bg.surface:T.bg.surfaceAlt}}>
                         <td style={{padding:'8px 10px',fontWeight:700,color:tk.name.startsWith('SLOP')?T.accent.amber:T.text.vessel,whiteSpace:'nowrap',textAlign:'right'}}>{tk.name}</td>
@@ -1517,7 +1546,7 @@ function BridgeViewWrapper() {
                         <td style={{padding:'8px 10px',fontFamily:'monospace',color:T.text.muted,textAlign:'right'}}>{tk.temp.toFixed(1)}</td>
                         <td style={{padding:'8px 10px',fontFamily:'monospace',color:T.accent.cyan,textAlign:'right'}}>{tk.pct.toFixed(1)}</td>
                         <td style={{padding:'8px 10px',fontFamily:'monospace',fontWeight:700,color:T.text.vessel,textAlign:'right'}}>{tk.mt.toLocaleString()}</td>
-                        <td style={{padding:'8px 10px',fontFamily:'monospace',color:igOk?T.accent.green:T.accent.coral,fontWeight:igOk?400:700,textAlign:'right'}}>{tk.o2.toFixed(1)}</td>
+                        <td style={{padding:'8px 10px',fontFamily:'monospace',color:o2Color,fontWeight:tk.o2>=3?700:400,textAlign:'right'}}>{tk.o2.toFixed(1)}</td>
                       </tr>
                     );
                   })}
@@ -1616,14 +1645,16 @@ const EngineView = () => {
             </div>
           </Card>
           <Card className="hover-card">
-            <CardHeader icon={Zap} title="Main Engine"/>
+            <CardHeader icon={Zap} title="Main Engine (Rated: 30,215 kW MCR)"/>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
               <Stat label="Shaft RPM"       value="84.2"/>
               <Stat label="ME Load"         value="82%"  accent={T.accent.green}/>
-              <Stat label="Avg Exhaust Temp"value="318"  unit="°C"/>
+              <Stat label="ME Output"       value="24,776" unit="kW" accent={T.accent.cyan}/>
               <Stat label="Scav Air Pr"     value="3.2"  unit="bar"/>
+              <Stat label="Avg Exhaust Temp"value="318"  unit="°C"/>
               <Stat label="HT FW Temp Out"  value="82"   unit="°C"/>
               <Stat label="LO Pressure"     value="5.8"  unit="bar" accent={T.accent.green}/>
+              <Stat label="24h Fuel Burn"   value="42.1" unit="MT"/>
             </div>
           </Card>
         </div>
@@ -1633,7 +1664,7 @@ const EngineView = () => {
           <Card className="hover-card">
             <CardHeader icon={Settings} title="Auxiliary Engines (rated 1,050 kW each)"/>
             <div style={{display:'flex',flexDirection:'column',gap:0}}>
-              {[{n:'AE 1',load:'68%',kw:714,rpm:'720',status:'Running',ok:true},{n:'AE 2',load:'72%',kw:756,rpm:'720',status:'Running',ok:true},{n:'AE 3',load:'0%',kw:0,rpm:'0',status:'Standby',ok:false}].map((ae,i)=>(
+              {[{n:'AE 1',load:'71%',kw:746,rpm:'720',status:'Running',ok:true},{n:'AE 2',load:'71%',kw:746,rpm:'720',status:'Running',ok:true},{n:'AE 3',load:'0%',kw:0,rpm:'0',status:'Standby',ok:false}].map((ae,i)=>(
                 <div key={i} style={{display:'grid',gridTemplateColumns:'40px 1fr 1fr 1fr 90px',gap:8,padding:'13px 0',borderBottom:i<2?`1px solid ${T.bg.canvas}`:'none',alignItems:'center',animation:`fadeUp 0.4s ease-out ${i*0.05}s both`}}>
                   <span style={{fontSize:13,fontWeight:700,color:T.text.vessel}}>{ae.n}</span>
                   <span style={{fontFamily:'monospace',fontSize:12,color:T.text.muted}}>{ae.rpm} RPM</span>
@@ -1643,9 +1674,12 @@ const EngineView = () => {
                 </div>
               ))}
             </div>
-            <div style={{display:'flex',alignItems:'center',gap:6,paddingTop:4,borderTop:`1px solid ${T.bg.canvas}`}}>
-              <CheckCircle2 size={12} color={T.accent.green}/>
-              <span style={{fontSize:11,color:T.accent.green,fontWeight:600}}>No active AE alarms</span>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:8,borderTop:`1px solid ${T.bg.canvas}`}}>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <CheckCircle2 size={12} color={T.accent.green}/>
+                <span style={{fontSize:11,color:T.accent.green,fontWeight:600}}>No active AE alarms</span>
+              </div>
+              <span style={{fontFamily:'monospace',fontSize:12,fontWeight:700,color:T.accent.cyan}}>Total: 1,492 kW</span>
             </div>
           </Card>
           <Card className="hover-card">
@@ -1686,12 +1720,55 @@ const CrewView = () => {
   };
   const days7 = Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-6+i);return d.toISOString().slice(5,10);});
 
+  const expiredCerts  = Object.entries(CREW_CERTS).flatMap(([id,certs])=>
+    certs.filter(c=>new Date(c.expires)<today).map(c=>({member:FULL_CREW.find(m=>m.id===Number(id)),cert:c}))
+  );
+  const restViolators = REST_HOURS_7D.filter(row=>{
+    const total  = row.hours.reduce((a,b)=>a+b,0);
+    const minDay = Math.min(...row.hours);
+    return total<77||minDay<10;
+  });
+
   return (
     <main aria-label="Crew" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px'}}>
       <header>
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Λίστα Πληρώματος':'Crew Roster'}</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>{FULL_CREW.length} POB</p>
       </header>
+      {!restricted&&expiredCerts.length>0&&(
+        <div style={{background:'rgba(255,90,95,0.08)',border:`1px solid ${T.accent.coral}`,borderRadius:T.radius.md,padding:'14px 16px',display:'flex',flexDirection:'column',gap:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <AlertOctagon size={14} color={T.accent.coral}/>
+            <span style={{fontSize:12,fontWeight:700,color:T.accent.coral,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+              {expiredCerts.length} Expired Certificate{expiredCerts.length>1?'s':''} — PSC Detainable Risk
+            </span>
+          </div>
+          {expiredCerts.map((e,i)=>(
+            <div key={i} style={{fontSize:11,color:T.text.muted,lineHeight:1.5,paddingLeft:22}}>
+              <span style={{fontWeight:700,color:T.text.vessel}}>{e.member?.name}</span> · {e.cert.type} · expired {e.cert.expires}
+            </div>
+          ))}
+        </div>
+      )}
+      {!restricted&&restViolators.length>0&&(
+        <div style={{background:'rgba(255,90,95,0.06)',border:`1px solid rgba(255,90,95,0.35)`,borderRadius:T.radius.md,padding:'12px 16px',display:'flex',flexDirection:'column',gap:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <AlertTriangle size={14} color={T.accent.coral}/>
+            <span style={{fontSize:12,fontWeight:700,color:T.accent.coral,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+              STCW Rest-Hour Violations — Master to be notified
+            </span>
+          </div>
+          {restViolators.map((r,i)=>{
+            const total=r.hours.reduce((a,b)=>a+b,0);
+            const minDay=Math.min(...r.hours);
+            return (
+              <div key={i} style={{fontSize:11,color:T.text.muted,lineHeight:1.5,paddingLeft:22}}>
+                <span style={{fontWeight:700,color:T.text.vessel}}>{r.name}</span> · 7d total: {total}h {total<77?`(min 77h req)`:''}{minDay<10?` · Min day: ${minDay}h (min 10h req)`:''}
+              </div>
+            );
+          })}
+        </div>
+      )}
       <SubTabs tabs={['roster','hours','certs']} active={crewSub} setActive={setCrewSub}
         labels={lang==='el'?{roster:'Λίστα',hours:'Ώρες',certs:'Πιστοπ.'}:{}}/>
 
@@ -2019,7 +2096,9 @@ const OpsView = () => {
   const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,noonData,setNoonData,musterRoll,setMusterRoll,currentUser,scrollH,lang} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
-  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',robLsmgo:'',avgSpeed:'',cog:'',baro:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meHours:'',etaNext:'',voyageNo:'',remarks:''});
+  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',robLsmgo:'',avgSpeed:'',cog:'',baro:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meRunHrs:'',etaNext:'',voyageNo:'',remarks:''});
+  const noonRequiredFields = ['voyageNo','lat','lon','distRun','meConsump','rob'];
+  const noonReady = noonRequiredFields.every(k=>noonForm[k].trim());
   const [liveTime, setLiveTime] = useState(utcTime());
   useEffect(()=>{ const id=setInterval(()=>setLiveTime(utcTime()),1000); return()=>clearInterval(id); },[]);
   const [noonListening, setNoonListening] = useState(false);
@@ -2043,6 +2122,11 @@ const OpsView = () => {
   };
 
   const pscDone   = pscItems.filter(x=>x.done).length;
+  const today_d   = new Date();
+  const pscExpiredCerts  = Object.values(CREW_CERTS).flat().some(c=>new Date(c.expires)<today_d);
+  const pscRestViolation = REST_HOURS_7D.some(row=>Math.min(...row.hours)<10||row.hours.reduce((a,b)=>a+b,0)<77);
+  const pscLinkedDefects = DEFECTS_SEED.filter(d=>d.pscLinked&&d.status!=='closed');
+
   const togglePsc = id => setPscItems(items=>items.map(item=>{
     if(item.id!==id) return item;
     const nowDone = !item.done;
@@ -2062,6 +2146,25 @@ const OpsView = () => {
 
       {opsSub==='psc'&&(
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{background:'rgba(255,176,23,0.06)',border:`1px solid rgba(255,176,23,0.25)`,borderRadius:T.radius.sm,padding:'10px 14px',display:'flex',gap:8,alignItems:'flex-start'}}>
+            <Info size={12} color={T.accent.amber} style={{flexShrink:0,marginTop:1}}/>
+            <p style={{fontSize:11,color:T.accent.amber,margin:0,lineHeight:1.5}}>Pre-Arrival Self-Assessment — not an official PSC inspection record. Items verified by ship's officers before port arrival.</p>
+          </div>
+          {pscLinkedDefects.length>0&&(
+            <div style={{background:'rgba(255,90,95,0.08)',border:`1px solid rgba(255,90,95,0.4)`,borderRadius:T.radius.md,padding:'12px 14px',display:'flex',flexDirection:'column',gap:8}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <AlertOctagon size={13} color={T.accent.coral}/>
+                <span style={{fontSize:11,fontWeight:700,color:T.accent.coral,textTransform:'uppercase',letterSpacing:'0.05em'}}>
+                  {pscLinkedDefects.length} Open Defects Linked to PSC Items
+                </span>
+              </div>
+              {pscLinkedDefects.map(d=>(
+                <div key={d.id} style={{fontSize:11,color:T.text.muted,lineHeight:1.5,paddingLeft:20}}>
+                  <span style={{fontWeight:700,color:T.text.vessel}}>{d.component}</span> · {d.system} · <PriorityBadge p={d.priority}/>
+                </div>
+              ))}
+            </div>
+          )}
           <Card>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
               <span style={{fontSize:12,color:T.text.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.04em'}}>PSC Readiness</span>
@@ -2082,6 +2185,12 @@ const OpsView = () => {
                 {item.done&&item.verifiedAt&&(
                   <span style={{fontSize:10,fontFamily:'monospace',color:T.accent.green,display:'block',marginTop:3}}>{utcFull(item.verifiedAt)} · {item.verifiedBy}</span>
                 )}
+                {item.id===19&&pscRestViolation&&(
+                  <span style={{fontSize:10,color:T.accent.coral,display:'block',marginTop:3,fontWeight:600}}>⚠ STCW violations exist in rest-hours data — verify Crew tab before ticking</span>
+                )}
+                {item.id===22&&pscExpiredCerts&&(
+                  <span style={{fontSize:10,color:T.accent.coral,display:'block',marginTop:3,fontWeight:600}}>⚠ Expired certificates exist in crew data — verify Crew tab before ticking</span>
+                )}
               </div>
             </button>
           ))}
@@ -2090,33 +2199,45 @@ const OpsView = () => {
 
       {opsSub==='gmdss'&&(
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          {gmdssItems.map((item,i)=>(
-            <Card key={item.id} className="hover-card" style={{animation:`fadeUp 0.4s ease-out ${i*0.05}s both`}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                <div style={{flex:1,paddingRight:10}}>
-                  <p style={{fontSize:14,fontWeight:700,color:T.text.vessel,margin:'0 0 3px'}}>{item.item}</p>
-                  <p style={{fontSize:12,color:T.text.muted,margin:0}}>Freq: {item.freq}</p>
+          {gmdssItems.map((item,i)=>{
+            const daysLeft = gmdssNextDue(item);
+            const isOverdue = daysLeft !== null && daysLeft < 0;
+            const isDueSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 2;
+            return (
+              <Card key={item.id} className="hover-card" style={{animation:`fadeUp 0.4s ease-out ${i*0.05}s both`,border:isOverdue?`1px solid ${T.accent.coral}`:isDueSoon?`1px solid ${T.accent.amber}`:'1px solid transparent'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                  <div style={{flex:1,paddingRight:10}}>
+                    <p style={{fontSize:14,fontWeight:700,color:T.text.vessel,margin:'0 0 3px'}}>{item.item}</p>
+                    <p style={{fontSize:12,color:T.text.muted,margin:0}}>Freq: {item.freq}</p>
+                  </div>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
+                    <Badge label={item.tested?'TESTED':'PENDING'} color={item.tested?T.accent.green:T.accent.amber} bg={item.tested?'rgba(0,229,143,0.12)':'rgba(255,176,23,0.12)'}/>
+                    {daysLeft!==null&&(
+                      <span style={{fontSize:10,fontWeight:700,color:isOverdue?T.accent.coral:isDueSoon?T.accent.amber:T.text.faint,fontFamily:'monospace'}}>
+                        {isOverdue?`OVERDUE ${Math.abs(daysLeft)}d`:daysLeft===0?'DUE TODAY':`Next due: ${daysLeft}d`}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <Badge label={item.tested?'TESTED':'PENDING'} color={item.tested?T.accent.green:T.accent.amber} bg={item.tested?'rgba(0,229,143,0.12)':'rgba(255,176,23,0.12)'}/>
-              </div>
-              {item.tested&&item.testedAt&&(
-                <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'9px 12px'}}>
-                  <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(item.testedAt)} · {item.testedBy}</p>
-                </div>
-              )}
-              {!item.tested&&item.lastTestedAt&&(
-                <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'8px 12px',marginBottom:8}}>
-                  <p style={{fontSize:10,fontWeight:600,color:T.text.faint,margin:'0 0 2px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Previous Test</p>
-                  <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(item.lastTestedAt)} · {item.lastTestedBy}</p>
-                </div>
-              )}
-              {!item.tested&&(
-                <button onClick={()=>logGmdss(item.id)} style={{background:T.accent.primary,border:'none',borderRadius:T.radius.pill,padding:'11px',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',width:'100%'}}>
-                  Log Test — {liveTime}
-                </button>
-              )}
-            </Card>
-          ))}
+                {item.tested&&item.testedAt&&(
+                  <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'9px 12px'}}>
+                    <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(item.testedAt)} · {item.testedBy}</p>
+                  </div>
+                )}
+                {!item.tested&&item.lastTestedAt&&(
+                  <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'8px 12px',marginBottom:8}}>
+                    <p style={{fontSize:10,fontWeight:600,color:T.text.faint,margin:'0 0 2px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Previous Test</p>
+                    <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(item.lastTestedAt)} · {item.lastTestedBy}</p>
+                  </div>
+                )}
+                {!item.tested&&(
+                  <button onClick={()=>logGmdss(item.id)} style={{background:isOverdue?T.accent.coral:T.accent.primary,border:'none',borderRadius:T.radius.pill,padding:'11px',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',width:'100%'}}>
+                    Log Test — {liveTime}
+                  </button>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -2127,7 +2248,9 @@ const OpsView = () => {
               <Card style={{textAlign:'center',padding:'32px 20px 20px'}}>
                 <CheckCircle2 size={44} color={T.accent.green} style={{margin:'0 auto 12px'}}/>
                 <p style={{fontSize:15,fontWeight:700,color:T.text.vessel,margin:'0 0 4px'}}>Noon Report Signed</p>
-                <p style={{fontSize:12,fontFamily:'monospace',color:T.text.muted,margin:'0 0 16px'}}>{utcDate()} · {noonData?.signedBy||currentUser?.label||'Master'} · Biometric verified</p>
+                <p style={{fontSize:12,fontFamily:'monospace',color:T.text.muted,margin:'0 0 4px'}}>{utcFull(noonData?.signedAt||utcNow())} · {noonData?.signedBy||currentUser?.label||'Master'} · Biometric verified</p>
+                {noonData?.amendVersion&&<p style={{fontSize:10,fontFamily:'monospace',color:T.accent.amber,margin:'0 0 16px'}}>Amendment #{noonData.amendVersion} · Original: {utcFull(noonData.originalSignedAt)}</p>}
+                {!noonData?.amendVersion&&<p style={{fontSize:10,color:T.text.faint,margin:'0 0 16px'}}>Original signature — no amendments</p>}
                 {noonData&&(
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,textAlign:'left'}}>
                     {[
@@ -2158,9 +2281,18 @@ const OpsView = () => {
                   </div>
                 )}
               </Card>
-              <PillButton variant="secondary" onClick={()=>{ setNoonLogged(false); setNoonData(null); if(noonData) setNoonForm({...noonData}); }}>
+              <PillButton variant="secondary" onClick={()=>{
+                if(noonData) setNoonForm({...noonData});
+                setNoonData(prev=>prev?{...prev,amendedAt:utcNow(),amendedBy:currentUser?.label||'Master',originalSignedAt:prev.amendedAt||prev.signedAt}:null);
+                setNoonLogged(false);
+              }}>
                 Amend Report
               </PillButton>
+              {noonData?.amendedAt&&(
+                <p style={{fontSize:10,fontFamily:'monospace',color:T.accent.amber,textAlign:'center',margin:'-8px 0 0'}}>
+                  Amendment — original signed {utcFull(noonData.originalSignedAt||noonData.signedAt)}
+                </p>
+              )}
             </div>
           ):(
             <>
@@ -2202,11 +2334,11 @@ const OpsView = () => {
                 </div>
                 <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Fuel & Cargo</p>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-                  {[{k:'meConsump',l:'ME Consump (MT)',    ph:'42.1'},
-                    {k:'rob',    l:'ROB VLSFO (MT)',      ph:'1,842'},
-                    {k:'robLsmgo',l:'ROB LSMGO (MT)',     ph:'224'},
-                    {k:'meHours',l:'ME Hours (24h)',       ph:'24.0'},
-                    {k:'cargoOb',l:'Cargo on Board (MT)', ph:'282,917'}
+                  {[{k:'meConsump',l:'ME Consump (MT)',        ph:'42.1'},
+                    {k:'rob',    l:'ROB VLSFO (MT)',          ph:'1,842'},
+                    {k:'robLsmgo',l:'ROB LSMGO (MT)',         ph:'224'},
+                    {k:'meRunHrs',l:'ME Running Hrs (24h)',   ph:'24.0'},
+                    {k:'cargoOb',l:'Cargo on Board (MT)',     ph:'275,705'}
                   ].map(({k,l,ph})=>(
                     <div key={k}>
                       <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>{l}</label>
@@ -2227,14 +2359,19 @@ const OpsView = () => {
                 <span style={{fontSize:11,color:T.text.faint}}>Uses simulated biometric sign-off</span>
                 <InfoTip text="This demo simulates the biometric step in-app. In production this would call the vessel's actual fingerprint/Face ID hardware for a tamper-proof, officer-attributed signature."/>
               </div>
-              <PillButton variant="primary" onClick={()=>setShowBio(true)}>
+              {!noonReady&&(
+                <p style={{fontSize:11,color:T.accent.amber,textAlign:'center',margin:'0 0 4px'}}>
+                  Required: Voyage No., Position, Dist Run, ME Consump, ROB VLSFO
+                </p>
+              )}
+              <PillButton variant={noonReady?'primary':'disabled'} disabled={!noonReady} onClick={()=>noonReady&&setShowBio(true)}>
                 <Lock size={15}/> Sign & Save Report
               </PillButton>
             </>
           )}
           {showBio&&(
             <BiometricModal title="Sign Noon Report" onSuccess={()=>{
-              setNoonData({...noonForm,signedAt:utcNow(),signedBy:currentUser?.label||'Master'});
+              setNoonData(prev=>({...noonForm,signedAt:utcNow(),signedBy:currentUser?.label||'Master',...(prev?.originalSignedAt?{originalSignedAt:prev.originalSignedAt,amendVersion:(prev.amendVersion||1)+1}:{})}));
               setNoonLogged(true);
               setShowBio(false);
             }} onCancel={()=>setShowBio(false)}/>
@@ -2386,6 +2523,7 @@ const ShoreMarketView = () => {
             </div>
           </div>
         ))}
+        <p style={{fontSize:10,color:T.text.faint,margin:'4px 0 0',textAlign:'right'}}>↑ rising bunker price = higher voyage cost</p>
       </Card>
       <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
         <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
@@ -2398,7 +2536,7 @@ const ShoreMarketView = () => {
 const FleetView = () => {
   const {scrollH}=useApp();
   const vessels=[
-    {name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden',dest:'Rotterdam',eta:'Jul 14',speed:'13.2 kn',hra:true},
+    {name:'MT Iron Titan',type:'VLCC',flag:'🇱🇷',pos:'24°32N 057°18E',status:'Laden',dest:'Rotterdam',eta:getETA(13),speed:'13.4 kn',hra:true},
     {name:'MT Pacific Star',type:'Suezmax',flag:'🇬🇷',pos:'01°18N 103°52E',status:'Waiting Orders',dest:'Singapore',eta:'Anchored 23 Jul',speed:'0.0 kn',hra:false},
     {name:'MT Aegean Pride',type:'Aframax',flag:'🇬🇷',pos:'37°56N 023°42E',status:'In Port',dest:'Piraeus',eta:'Berthed 22 Jul',speed:'0.0 kn',hra:false},
   ];
@@ -2450,9 +2588,13 @@ const CarbonView = () => {
         <div style={{display:'flex',alignItems:'center',gap:8}}><Leaf size={16} color={isRed?T.accent.coral:T.accent.green}/><span style={{fontSize:13,fontWeight:700,color:isRed?T.accent.coral:T.accent.green}}>MT Iron Titan</span></div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
           <Stat label="CII Score"    value={cii.score} accent={isRed?T.accent.coral:T.accent.amber}/>
-          <Stat label="EU ETS Daily" value={fmtUSD(Math.round(cii.dailyCO2*74))} accent={isRed?T.accent.coral:T.accent.amber}/>
+          <Stat label="EU ETS Daily (50%)" value={fmtUSD(Math.round(cii.dailyCO2*74*0.5))} accent={isRed?T.accent.coral:T.accent.amber}/>
           <Stat label="CII Rating"   value={cii.rating} accent={isRed?T.accent.coral:T.accent.amber}/>
           <Stat label="Target Score" value={cii.target}/>
+        </div>
+        <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'8px 12px',display:'flex',gap:8,alignItems:'flex-start'}}>
+          <Info size={12} color={T.text.faint} style={{flexShrink:0,marginTop:1}}/>
+          <span style={{fontSize:11,color:T.text.faint,lineHeight:1.5}}>EU ETS 2024+: AG–Rotterdam voyage = 50% allowance (non-EU leg). Full 100% applies only for EU port-to-EU port legs.</span>
         </div>
         <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'12px 14px',display:'flex',alignItems:'flex-start',gap:10,marginTop:2}}>
           <TrendingDown size={14} color={isRed?T.accent.coral:T.accent.amber} style={{flexShrink:0,marginTop:1}}/>
@@ -2580,7 +2722,9 @@ export default function App() {
     setCurrentUser(null);
     setNeedsSetup(false);
     setNoonLogged(false);
+    setNoonData(null);
     store.del('noonLogged');
+    store.del('noonData');
   },[]);
 
   const handleSetupDone = useCallback(v=>{ setVessel(v); setNeedsSetup(false); setActiveTab('bridge'); },[]);
