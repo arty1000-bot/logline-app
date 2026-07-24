@@ -1755,8 +1755,8 @@ export default function App() {
     const calcScale = ()=>{
       if(window.innerWidth >= 768){
         const s = Math.min(
-          (window.innerHeight * 0.88) / 844,
-          (window.innerWidth  * 0.88) / 390
+          (window.innerHeight * 0.96) / 844,
+          (window.innerWidth  * 0.96) / 390
         );
         setPhoneScale(Math.min(s, 2.0));
       } else {
@@ -1837,7 +1837,7 @@ export default function App() {
 
   return (
     <AppCtx.Provider value={ctx}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh',background:'#000',padding:16}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh',padding:16,background:'radial-gradient(ellipse 80% 70% at 50% 50%, #0D2240 0%, #071828 45%, #030D18 100%)'}}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
