@@ -13,7 +13,7 @@ import {
   PlusCircle, TrendingDown, Leaf,
   Lock, Eye, LogOut, Moon, Check, Sun,
   Ship, MapPin, Info, Anchor, Briefcase, Map, Edit3, Loader,
-  HelpCircle, ChevronDown
+  HelpCircle, ChevronDown, Phone, Mail
 } from 'lucide-react';
 
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
@@ -282,16 +282,16 @@ const DEFECTS_SEED = [
 ];
 
 const SCHEDULED_JOBS = [
-  {id:4, system:'Safety',      job:'Immersion Suit Annual Inspection',  interval:'Annual',   due:'OVERDUE 3 days — detainable PSC deficiency',   urgent:true},
-  {id:1, system:'Main Engine', job:'ME Cylinder Head Inspection',       interval:'4,000 RH', due:'OVERDUE 60 RH — DPA risk assessment approved', urgent:true, dpaExtension:{approvedRH:100,usedRH:60,approvedBy:'DPA Ref: RA-2026-047 · Smith, K.'}},
-  {id:5, system:'Safety',      job:'Lifeboat Engine Test',              interval:'Weekly',   due:'DUE TODAY',                                     urgent:true},
-  {id:3, system:'Safety',      job:'Liferaft Annual Inspection',        interval:'Annual',   due:'In 6 days',                                     urgent:true},
-  {id:7, system:'Navigation',  job:'Magnetic Compass Deviation Card',   interval:'Annual',   due:'In 8 days',                                     urgent:true},
-  {id:6, system:'Safety',      job:'CO2 Fixed System Annual Inspection',interval:'Annual',   due:'In 12 days',                                    urgent:true},
-  {id:2, system:'Auxiliary',   job:'AE1 Governor Service',              interval:'6,000 RH', due:'In 90 RH',                                      urgent:false},
-  {id:8, system:'Main Engine', job:'ME Turbocharger Service',           interval:'16,000 RH',due:'In 480 RH',                                    urgent:false},
-  {id:9, system:'Auxiliary',   job:'AE2 Fuel Injection Pump Service',   interval:'8,000 RH', due:'In 320 RH',                                    urgent:false},
-  {id:10,system:'Deck',        job:'Anchor Chain Inspection',           interval:'Annual',   due:'In 42 days',                                    urgent:false},
+  {id:4, system:'Safety',      job:'Immersion Suit Annual Inspection',  interval:'Annual',   due:'OVERDUE 3 days — detainable PSC deficiency',   urgent:true,  pmsNo:'PMS-2026-0041'},
+  {id:1, system:'Main Engine', job:'ME Cylinder Head Inspection',       interval:'4,000 RH', due:'OVERDUE 60 RH — DPA risk assessment approved', urgent:true,  pmsNo:'PMS-2026-0032', dpaExtension:{approvedRH:100,usedRH:60,approvedBy:'DPA Ref: RA-2026-047 · Smith, K.'}},
+  {id:5, system:'Safety',      job:'Lifeboat Engine Test',              interval:'Weekly',   due:'DUE TODAY',                                     urgent:true,  pmsNo:'PMS-2026-0055'},
+  {id:3, system:'Safety',      job:'Liferaft Annual Inspection',        interval:'Annual',   due:'In 6 days',                                     urgent:true,  pmsNo:'PMS-2026-0038'},
+  {id:7, system:'Navigation',  job:'Magnetic Compass Deviation Card',   interval:'Annual',   due:'In 8 days',                                     urgent:true,  pmsNo:'PMS-2026-0047'},
+  {id:6, system:'Safety',      job:'CO2 Fixed System Annual Inspection',interval:'Annual',   due:'In 12 days',                                    urgent:true,  pmsNo:'PMS-2026-0039'},
+  {id:2, system:'Auxiliary',   job:'AE1 Governor Service',              interval:'6,000 RH', due:'In 90 RH',                                      urgent:false, pmsNo:'PMS-2026-0021'},
+  {id:8, system:'Main Engine', job:'ME Turbocharger Service',           interval:'16,000 RH',due:'In 480 RH',                                     urgent:false, pmsNo:'PMS-2026-0034'},
+  {id:9, system:'Auxiliary',   job:'AE2 Fuel Injection Pump Service',   interval:'8,000 RH', due:'In 320 RH',                                     urgent:false, pmsNo:'PMS-2026-0022'},
+  {id:10,system:'Deck',        job:'Anchor Chain Inspection',           interval:'Annual',   due:'In 42 days',                                    urgent:false, pmsNo:'PMS-2026-0060'},
 ];
 
 const SPARES_ROB = [
@@ -342,6 +342,52 @@ const DRILL_LOG_SEED = [
   {id:2, type:'Fire Drill',               date:'2026-07-10', time:'10:00Z', duration:35, remarks:'Scenario: fire in cargo pump room. All fire teams responded. Fire damper BD-14 found sticking — defect logged (BD-14).', officer:'Santos, J.'},
   {id:3, type:'Man Overboard Drill',      date:'2026-07-03', time:'15:30Z', duration:25, remarks:'MOB buoy deployed stbd. Williamson turn executed. Recovery time 8 min. All SOLAS LSA tested.', officer:'Chen, W.'},
   {id:4, type:'Enclosed Space Entry',     date:'2026-06-26', time:'09:00Z', duration:20, remarks:'Entry into aft peak void. Gas test, standby crew, rescue line rigged. All permit-to-work procedures followed.', officer:'Santos, J.'},
+];
+
+const VOYAGE_WAYPOINTS = [
+  {id:1, name:'Kharg Island (Departure)',     lat:'29°14.0N', lon:'050°21.0E', eta:'2026-07-09', status:'passed'},
+  {id:2, name:'Strait of Hormuz TSS',         lat:'26°26.0N', lon:'056°30.0E', eta:'2026-07-10', status:'passed'},
+  {id:3, name:'Gulf of Oman — Fix',           lat:'24°32.1N', lon:'057°18.4E', eta:'2026-07-24', status:'current'},
+  {id:4, name:'Bab-el-Mandeb TSS',            lat:'12°30.0N', lon:'043°20.0E', eta:'2026-07-31', status:'ahead'},
+  {id:5, name:'Suez Canal — Port Said',       lat:'31°14.0N', lon:'032°18.0E', eta:'2026-08-03', status:'ahead'},
+  {id:6, name:'Strait of Gibraltar',          lat:'35°59.0N', lon:'005°29.0W', eta:'2026-08-08', status:'ahead'},
+  {id:7, name:'Rotterdam (Destination)',      lat:'51°54.0N', lon:'004°05.0E', eta:'2026-08-12', status:'ahead'},
+];
+
+const IG_ALARM_HISTORY = [
+  {id:1, alarm:'High O₂ — No.2 STBD Tank',  o2:'5.1%', time:'2026-07-22T08:14:00Z', cleared:'2026-07-22T08:31:00Z', cause:'Blower briefly shut for maintenance. Restarted, O₂ returned to <3%.', officer:'Santos, J.'},
+  {id:2, alarm:'Deck Pressure Low',           o2:'—',    time:'2026-07-20T21:05:00Z', cleared:'2026-07-20T21:12:00Z', cause:'Deck seal self-reset. Investigated by C/O, no defect found.', officer:'Chen, W.'},
+  {id:3, alarm:'O₂ Monitor Calibration',     o2:'—',    time:'2026-07-15T06:45:00Z', cleared:'2026-07-15T07:00:00Z', cause:'Routine zero/span calibration completed. Sensor confirmed serviceable.', officer:'Nguyen, V.'},
+];
+
+const ENGINE_ALARM_HISTORY = [
+  {id:1, alarm:'ME LO Pressure Low',       value:'4.1 bar', time:'2026-07-21T13:22:00Z', cleared:'2026-07-21T13:28:00Z', cause:'Standby LO pump cut-in. Running pump strainer cleaned. Pressure restored to 5.8 bar.', officer:'Kim, S.'},
+  {id:2, alarm:'AE2 High Jacket CW Temp', value:'91°C',    time:'2026-07-19T04:47:00Z', cleared:'2026-07-19T05:10:00Z', cause:'FW cooler bypass valve found partially closed. Repositioned, temp returned to 78°C.', officer:'Nguyen, V.'},
+  {id:3, alarm:'ME Scav Air Temp High',   value:'52°C',    time:'2026-07-17T11:30:00Z', cleared:'2026-07-17T11:55:00Z', cause:'Air cooler fouled. Manual cleaning at sea. Temp returned to normal range.', officer:'Kim, S.'},
+  {id:4, alarm:'Bilge High Level — Fwd',  value:'—',       time:'2026-07-14T03:15:00Z', cleared:'2026-07-14T03:40:00Z', cause:'Fwd bilge pumped to OWS. Level cleared. Ongoing monitoring in place.', officer:'Santos, J.'},
+];
+
+const EMERGENCY_CONTACTS = [
+  {group:'Company',       name:'DPA — Smith, K.',         role:'Designated Person Ashore',            phone:'+44 207 900 1234', email:'dpa@ironlineshipmgt.com',       available:'24/7'},
+  {group:'Company',       name:'Operations — Lee, P.',    role:'Fleet Operations Manager',            phone:'+44 207 900 1235', email:'ops@ironlineshipmgt.com',       available:'Office hrs (GMT)'},
+  {group:'P&I Club',      name:'UK P&I Club — London',   role:'Club Correspondent',                  phone:'+44 207 283 4646', email:'london@ukpandi.com',            available:'24/7'},
+  {group:'P&I Club',      name:'Gulf Correspondent',      role:'P&I — Arabian Gulf',                  phone:'+971 4 331 9700',  email:'dubai@ukpandi.com',             available:'24/7'},
+  {group:'Flag State',    name:'LISCR — Liberia',        role:'Flag State Administration',            phone:'+1 703 790 3434',  email:'safety@liscr.com',              available:'24/7'},
+  {group:'Medical',       name:'CIRM — Rome',             role:'Maritime Medical Advice',              phone:'+39 06 5929 4400', email:'cirm@gard.no',                  available:'24/7'},
+  {group:'Security',      name:'UKMTO Dubai',             role:'HRA Maritime Security Reporting',      phone:'+971 50 552 3215', email:'ukmto@ukmto.org',               available:'24/7'},
+  {group:'Security',      name:'MSCHOA',                  role:'Maritime Security Centre — HoA',       phone:'+44 1923 958 545', email:'postmaster@mschoa.org',         available:'24/7'},
+  {group:'Class',         name:'DNV — Surveyor',          role:'Classification Society Contact',       phone:'+47 67 57 99 00',  email:'surveyor@dnv.com',              available:'Office hrs'},
+];
+
+const AUDIT_LOG_SEED = [
+  {id:1, action:'PSC Self-Assessment completed',           user:'Ivanov, M.',       time:'2026-07-24T06:00:00Z', detail:'15 items verified. 2 items flagged for attention.'},
+  {id:2, action:'Defect → WIP: OWS 15ppm Sensor',         user:'Nguyen, V.',       time:'2026-07-23T14:30:00Z', detail:'Investigation in progress. Bypass authorized by C/E.'},
+  {id:3, action:'GMDSS test logged — VHF DSC',            user:'Santos, J.',       time:'2026-07-23T09:15:00Z', detail:'Auto-entry generated in deck log per SOLAS Ch.IV.'},
+  {id:4, action:'Noon report submitted',                   user:'Ivanov, M.',       time:'2026-07-23T12:00:00Z', detail:'Pos: 24°32.1N 057°18.4E. SOG 13.4 kts, ME Hrs 42,180.'},
+  {id:5, action:'Abandon Ship Drill completed',            user:'Ivanov, M.',       time:'2026-07-17T14:00:00Z', detail:'Full muster in 12 min. All crew accounted for.'},
+  {id:6, action:'HRA transit acknowledged — Lagos',       user:'Ivanov, M.',       time:'2026-07-10T08:45:00Z', detail:'BMP5 checklist signed. UKMTO report filed.'},
+  {id:7, action:'DPA Risk Extension approved',             user:'Smith, K. (DPA)', time:'2026-07-08T10:00:00Z', detail:'ME Cyl Head Insp extended 100 RH. Ref: RA-2026-047.'},
+  {id:8, action:'Voyage commenced — Kharg Island',        user:'Ivanov, M.',       time:'2026-07-09T06:00:00Z', detail:'B/L signed. IHC 299,255 MT loaded. Dest: Rotterdam.'},
 ];
 
 const ROLES = [
@@ -1460,6 +1506,36 @@ function BridgeViewWrapper() {
           ):null;
         })()}
 
+        {/* Voyage Plan Waypoints — #5 */}
+        <Card className="hover-card" style={{padding:0}}>
+          <div style={{padding:'14px 16px 10px',borderBottom:`1px solid ${T.bg.canvas}`,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <CardHeader icon={Navigation} title="Voyage Plan — Route Waypoints"/>
+            <Badge label="FOR DISPLAY ONLY" color={T.text.faint} bg={T.bg.canvas}/>
+          </div>
+          <div style={{padding:'6px 0'}}>
+            {VOYAGE_WAYPOINTS.map((wp,i)=>{
+              const isCurrent = wp.status==='current';
+              const isPassed  = wp.status==='passed';
+              const dotColor  = isCurrent?T.accent.cyan:isPassed?T.accent.green:T.text.faint;
+              return (
+                <div key={wp.id} style={{display:'flex',alignItems:'flex-start',gap:12,padding:'10px 16px',background:isCurrent?'rgba(18,212,255,0.05)':'transparent',borderLeft:isCurrent?`3px solid ${T.accent.cyan}`:'3px solid transparent'}}>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0,paddingTop:4}}>
+                    <div style={{width:8,height:8,borderRadius:'50%',background:dotColor,border:isCurrent?`2px solid ${T.accent.cyan}33`:'none'}}/>
+                    {i<VOYAGE_WAYPOINTS.length-1&&<div style={{width:1,height:24,background:`${T.text.faint}44`,margin:'3px 0'}}/>}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline'}}>
+                      <span style={{fontSize:13,fontWeight:isCurrent?700:600,color:isCurrent?T.accent.cyan:isPassed?T.text.muted:T.text.vessel}}>{wp.name}</span>
+                      <span style={{fontSize:10,fontFamily:'monospace',color:isPassed?T.accent.green:isCurrent?T.accent.cyan:T.text.faint}}>{isPassed?'✓ '+wp.eta:isCurrent?'NOW':wp.eta}</span>
+                    </div>
+                    <span style={{fontSize:10,fontFamily:'monospace',color:T.text.faint}}>{wp.lat} / {wp.lon}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
         <button onClick={()=>{ setBridgeSub('log'); setShowLogModal(true); }}
           style={{background:T.bg.surface,border:'none',borderRadius:T.radius.lg,padding:'18px',display:'flex',alignItems:'center',gap:14,cursor:'pointer',boxShadow:T.shadow.soft}}>
           <div style={{width:52,height:52,borderRadius:T.radius.pill,background:T.bg.canvas,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -1626,6 +1702,30 @@ function BridgeViewWrapper() {
             })()}
           </Card>
 
+          {/* IG Alarm History — #12 */}
+          <Card className="hover-card">
+            <CardHeader icon={AlertTriangle} title="IG Alarm History (Last 30 days)"/>
+            {IG_ALARM_HISTORY.length===0?(
+              <div style={{display:'flex',alignItems:'center',gap:6,padding:'8px 0'}}>
+                <CheckCircle2 size={12} color={T.accent.green}/>
+                <span style={{fontSize:12,color:T.accent.green,fontWeight:600}}>No IG alarms in last 30 days</span>
+              </div>
+            ):IG_ALARM_HISTORY.map((al,i)=>(
+              <div key={al.id} style={{paddingTop:i===0?0:12,marginTop:i===0?0:12,borderTop:i===0?'none':`1px solid ${T.bg.canvas}`}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:3}}>
+                  <span style={{fontSize:13,fontWeight:700,color:T.accent.amber}}>{al.alarm}</span>
+                  {al.o2!=='—'&&<Badge label={`O₂ ${al.o2}`} color={T.accent.coral} bg="rgba(255,90,95,0.12)"/>}
+                </div>
+                <div style={{display:'flex',gap:10,marginBottom:4,flexWrap:'wrap'}}>
+                  <span style={{fontSize:10,fontFamily:'monospace',color:T.text.faint}}>Raised {utcFull(al.time)}</span>
+                  <span style={{fontSize:10,fontFamily:'monospace',color:T.accent.green}}>Cleared {utcFull(al.cleared)}</span>
+                </div>
+                <p style={{fontSize:12,color:T.text.muted,margin:0,lineHeight:1.5}}>{al.cause}</p>
+                <span style={{fontSize:10,color:T.text.faint}}>Officer: {al.officer}</span>
+              </div>
+            ))}
+          </Card>
+
           {/* Tank table */}
           <Card className="hover-card" style={{padding:0}}>
             <div style={{padding:'14px 16px 10px',borderBottom:`1px solid ${T.bg.canvas}`}}>
@@ -1736,7 +1836,7 @@ const EngineView = () => {
           ))}
         </Card>
       )}
-      <SubTabs tabs={['plant','aux']} active={engSub} setActive={setEngSub} labels={lang==='el'?{plant:STRINGS.el.stPlant,aux:STRINGS.el.stAux}:{}}/>
+      <SubTabs tabs={['plant','aux','alarms']} active={engSub} setActive={setEngSub} labels={lang==='el'?{plant:STRINGS.el.stPlant,aux:STRINGS.el.stAux,alarms:'Αλάρμ'}:{}}/>
       {engSub==='plant'&&(
         <div style={{display:'flex',flexDirection:'column',gap:18}}>
           <Card className="hover-card">
@@ -1761,6 +1861,34 @@ const EngineView = () => {
               <Stat label="24h Fuel Burn"   value="42.1" unit="MT"/>
             </div>
           </Card>
+        </div>
+      )}
+      {engSub==='alarms'&&(
+        <div style={{display:'flex',flexDirection:'column',gap:14,animation:'fadeUp 0.4s ease-out'}}>
+          <Card>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+              <CardHeader icon={AlertTriangle} title="Engine Alarm History (Last 30 days)"/>
+              <Badge label={`${ENGINE_ALARM_HISTORY.length} events`} color={T.accent.amber} bg="rgba(255,176,23,0.12)"/>
+            </div>
+            {ENGINE_ALARM_HISTORY.map((al,i)=>(
+              <div key={al.id} style={{paddingTop:i===0?0:14,marginTop:i===0?0:14,borderTop:i===0?'none':`1px solid ${T.bg.canvas}`}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:3}}>
+                  <span style={{fontSize:13,fontWeight:700,color:T.accent.amber}}>{al.alarm}</span>
+                  {al.value!=='—'&&<Badge label={al.value} color={T.accent.coral} bg="rgba(255,90,95,0.12)"/>}
+                </div>
+                <div style={{display:'flex',gap:10,marginBottom:5,flexWrap:'wrap'}}>
+                  <span style={{fontSize:10,fontFamily:'monospace',color:T.text.faint}}>Raised {utcFull(al.time)}</span>
+                  <span style={{fontSize:10,fontFamily:'monospace',color:T.accent.green}}>Cleared {utcFull(al.cleared)}</span>
+                </div>
+                <p style={{fontSize:12,color:T.text.muted,margin:'0 0 2px',lineHeight:1.5}}>{al.cause}</p>
+                <span style={{fontSize:10,color:T.text.faint}}>Officer: {al.officer}</span>
+              </div>
+            ))}
+          </Card>
+          <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}>
+            <CheckCircle2 size={12} color={T.accent.green}/>
+            <span style={{fontSize:11,color:T.text.muted}}>All alarms cleared. No outstanding engine defects requiring immediate action.</span>
+          </div>
         </div>
       )}
       {engSub==='aux'&&(
@@ -2126,6 +2254,7 @@ const MaintenanceView = () => {
                 <div style={{flex:1,paddingRight:10}}>
                   <p style={{fontSize:14,fontWeight:700,margin:'0 0 3px',color:T.text.vessel}}>{job.job}</p>
                   <p style={{fontSize:12,color:T.text.muted,margin:0}}>{job.system} · Every {job.interval}</p>
+                  {job.pmsNo&&<span style={{fontSize:10,fontFamily:'monospace',color:T.text.faint}}>{job.pmsNo}</span>}
                 </div>
                 {job.urgent&&<Badge label="DUE" color={T.accent.coral} bg="rgba(255,90,95,0.12)"/>}
               </div>
@@ -2311,7 +2440,7 @@ const OpsView = () => {
         <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Επιχειρήσεις':'Ship Ops'}</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>{lang==='el'?'Συμμόρφωση & αρχεία':'Compliance & records'}</p>
       </header>
-      <SubTabs tabs={['psc','gmdss','noon','muster']} active={opsSub} setActive={setOpsSub} labels={lang==='el'?{psc:STRINGS.el.stPsc,gmdss:STRINGS.el.stGmdss,noon:STRINGS.el.stNoon,muster:STRINGS.el.stMuster}:{}}/>
+      <SubTabs tabs={['psc','gmdss','noon','muster','contacts','audit']} active={opsSub} setActive={setOpsSub} labels={lang==='el'?{psc:STRINGS.el.stPsc,gmdss:STRINGS.el.stGmdss,noon:STRINGS.el.stNoon,muster:STRINGS.el.stMuster,contacts:'Επαφές',audit:'Ιστορικό'}:{}}/>
 
       {opsSub==='psc'&&(
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
@@ -2707,6 +2836,76 @@ const OpsView = () => {
         </div>
         );
       })()}
+
+      {/* Emergency Contacts — #54 */}
+      {opsSub==='contacts'&&(
+        <div style={{display:'flex',flexDirection:'column',gap:12,animation:'fadeUp 0.4s ease-out'}}>
+          {(()=>{
+            const groups = [...new Set(EMERGENCY_CONTACTS.map(c=>c.group))];
+            return groups.map(grp=>(
+              <Card key={grp}>
+                <p style={{fontSize:11,fontWeight:700,color:T.text.muted,textTransform:'uppercase',letterSpacing:'0.07em',margin:'0 0 10px'}}>{grp}</p>
+                {EMERGENCY_CONTACTS.filter(c=>c.group===grp).map((c,i,arr)=>(
+                  <div key={c.name} style={{paddingTop:i===0?0:12,marginTop:i===0?0:12,borderTop:i===0?'none':`1px solid ${T.bg.canvas}`}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
+                      <div>
+                        <p style={{fontSize:13,fontWeight:700,color:T.text.vessel,margin:0}}>{c.name}</p>
+                        <p style={{fontSize:11,color:T.text.muted,margin:'2px 0 0'}}>{c.role}</p>
+                      </div>
+                      <Badge label={c.available} color={c.available==='24/7'?T.accent.green:T.accent.amber} bg={c.available==='24/7'?'rgba(0,229,143,0.10)':'rgba(255,176,23,0.10)'}/>
+                    </div>
+                    <div style={{display:'flex',flexDirection:'column',gap:3,marginTop:6}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <Phone size={11} color={T.text.faint}/>
+                        <span style={{fontSize:12,fontFamily:'monospace',color:T.accent.cyan}}>{c.phone}</span>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <Mail size={11} color={T.text.faint}/>
+                        <span style={{fontSize:12,fontFamily:'monospace',color:T.text.muted}}>{c.email}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </Card>
+            ));
+          })()}
+          <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'10px 14px'}}>
+            <p style={{fontSize:11,color:T.text.faint,margin:0,lineHeight:1.5}}>Emergency contact list verified by Master {utcFull('2026-07-09T06:00:00Z')}. Update via Ship Management if contacts change during voyage.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Audit Trail — #51 */}
+      {opsSub==='audit'&&(
+        <div style={{display:'flex',flexDirection:'column',gap:12,animation:'fadeUp 0.4s ease-out'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <p style={{fontSize:11,fontWeight:700,color:T.text.muted,textTransform:'uppercase',letterSpacing:'0.07em',margin:0}}>System Actions — Voyage Log</p>
+            <Badge label={`${AUDIT_LOG_SEED.length} entries`} color={T.accent.cyan} bg="rgba(18,212,255,0.10)"/>
+          </div>
+          <Card>
+            {AUDIT_LOG_SEED.map((entry,i)=>(
+              <div key={entry.id} style={{display:'flex',gap:12,paddingTop:i===0?0:12,marginTop:i===0?0:12,borderTop:i===0?'none':`1px solid ${T.bg.canvas}`}}>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
+                  <div style={{width:7,height:7,borderRadius:'50%',background:T.accent.cyan,marginTop:4}}/>
+                  {i<AUDIT_LOG_SEED.length-1&&<div style={{width:1,flex:1,background:`${T.text.faint}44`,margin:'4px 0'}}/>}
+                </div>
+                <div style={{flex:1,paddingBottom:i<AUDIT_LOG_SEED.length-1?0:0}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:2,flexWrap:'wrap',gap:4}}>
+                    <span style={{fontSize:13,fontWeight:700,color:T.text.vessel}}>{entry.action}</span>
+                    <span style={{fontSize:10,fontFamily:'monospace',color:T.text.faint,flexShrink:0}}>{utcFull(entry.time)}</span>
+                  </div>
+                  <p style={{fontSize:12,color:T.text.muted,margin:'0 0 2px',lineHeight:1.5}}>{entry.detail}</p>
+                  <span style={{fontSize:10,color:T.text.faint}}>by {entry.user}</span>
+                </div>
+              </div>
+            ))}
+          </Card>
+          <div style={{background:T.bg.canvas,borderRadius:T.radius.sm,padding:'10px 14px',display:'flex',alignItems:'center',gap:8}}>
+            <AlertTriangle size={11} color={T.text.faint}/>
+            <span style={{fontSize:11,color:T.text.faint}}>Audit trail is read-only. All entries are timestamped at UTC and attributed to the logged-in user.</span>
+          </div>
+        </div>
+      )}
     </main>
   );
 };
