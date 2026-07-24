@@ -1748,7 +1748,25 @@ export default function App() {
   const [loaded,      setLoaded]      = useState(false);
   const [scrolled,    setScrolled]    = useState(false);
   const [scrollH,     setScrollH]     = useState(0);
+  const [phoneScale,  setPhoneScale]  = useState(1);
   const scrollRef = useRef(null);
+
+  useEffect(()=>{
+    const calcScale = ()=>{
+      if(window.innerWidth >= 768){
+        const s = Math.min(
+          (window.innerHeight * 0.88) / 844,
+          (window.innerWidth  * 0.88) / 390
+        );
+        setPhoneScale(Math.min(s, 2.0));
+      } else {
+        setPhoneScale(1);
+      }
+    };
+    calcScale();
+    window.addEventListener('resize', calcScale);
+    return ()=>window.removeEventListener('resize', calcScale);
+  },[]);
 
   useEffect(()=>{
     (async()=>{
@@ -1859,7 +1877,7 @@ export default function App() {
           select option{background:#1A1B22;color:#fff}
         `}</style>
 
-        <div style={{width:'100%',maxWidth:390,height:'100vh',maxHeight:844,background:T.bg.canvas,borderRadius:44,border:'10px solid #000',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 40px 80px rgba(0,0,0,0.6)',animation:'fadeIn 0.5s ease-out',filter:nvgFilter,transition:'filter 0.4s ease',position:'relative'}}>
+        <div style={{width:390,height:'min(100dvh,844px)',transform:`scale(${phoneScale})`,transformOrigin:'center center',background:T.bg.canvas,borderRadius:44,border:'10px solid #000',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 40px 80px rgba(0,0,0,0.6)',animation:'fadeIn 0.5s ease-out',filter:nvgFilter,transition:'filter 0.4s ease',position:'relative'}}>
           {!currentUser?(
             <LoginScreen onLogin={handleLogin} vesselName={vessel.name}/>
           ):needsSetup?(
