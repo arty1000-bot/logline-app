@@ -783,15 +783,19 @@ const BiometricModal = ({title,onSuccess,onCancel}) => {
 // ═══════════════════════════════════════════════════════
 // DECK LOG MODAL
 // ═══════════════════════════════════════════════════════
-const LOG_CATEGORIES = ['Position Report','Watch Handover','Engine Movement','Incident','Drill Record','Port Entry / Departure','Cargo Operation','Weather Observation','Other'];
+const LOG_CATEGORIES = ['Position Report','Watch Handover','Engine Movement','Emergency / Incident','Drill Record','Port Entry / Departure','Cargo Operation','GMDSS Test','Weather Observation','Other'];
 const DeckLogModal = ({onSave,onCancel}) => {
   const {currentUser,vessel,lang} = useApp();
-  const [text,setText]         = useState('');
-  const [category,setCategory] = useState('Position Report');
-  const [listening,setListening] = useState(false);
-  const [hasSR,setHasSR]       = useState(false);
-  const recognitionRef         = useRef(null);
-  const mountedRef             = useRef(true);
+  const [text,setText]               = useState('');
+  const [actionTaken,setActionTaken] = useState('');
+  const [masterNotified,setMasterNotified] = useState(false);
+  const [category,setCategory]       = useState('Position Report');
+  const [oow,setOow]                 = useState(currentUser?.label||'');
+  const [listening,setListening]     = useState(false);
+  const [hasSR,setHasSR]             = useState(false);
+  const recognitionRef               = useRef(null);
+  const mountedRef                   = useRef(true);
+  const isEmergency                  = category === 'Emergency / Incident';
 
   useEffect(()=>{
     setHasSR(!!(window.SpeechRecognition||window.webkitSpeechRecognition));
@@ -812,19 +816,29 @@ const DeckLogModal = ({onSave,onCancel}) => {
     r.start();
   };
 
+  const canSave = text.trim() && oow.trim() && (!isEmergency || actionTaken.trim());
+
   const save = () => {
-    if(!text.trim()) return;
+    if(!canSave) return;
     recognitionRef.current?.stop();
-    onSave({ text:text.trim(), category, timestamp:utcNow(), author:currentUser?.label||'Officer', vessel:vessel?.name });
+    onSave({
+      text:text.trim(), category, oow:oow.trim(),
+      emergency:isEmergency,
+      actionTaken:isEmergency?actionTaken.trim():undefined,
+      masterNotified:isEmergency?masterNotified:undefined,
+      timestamp:utcNow(), author:currentUser?.label||'Officer', vessel:vessel?.name,
+    });
   };
 
   return (
     <div role="dialog" aria-modal="true" style={{position:'absolute',inset:0,zIndex:200,display:'flex',alignItems:'flex-end',animation:'backdropIn 0.3s ease-out forwards'}}>
-      <div style={{width:'100%',background:T.bg.surface,borderRadius:'32px 32px 0 0',padding:'28px 24px 40px',animation:'slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',maxHeight:'85vh',overflowY:'auto'}}>
+      <div style={{width:'100%',background:T.bg.surface,borderRadius:'32px 32px 0 0',padding:'28px 24px 40px',animation:'slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',maxHeight:'88vh',overflowY:'auto'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:18}}>
           <div>
-            <h2 style={{fontSize:18,fontWeight:700,margin:'0 0 3px'}}>Deck Log Entry</h2>
-            <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(utcNow())} · {currentUser?.label||'Officer'}</p>
+            <h2 style={{fontSize:18,fontWeight:700,margin:'0 0 3px',color:isEmergency?T.accent.coral:T.text.main}}>
+              {isEmergency?'⚠ Emergency Log Entry':'Deck Log Entry'}
+            </h2>
+            <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:0}}>{utcFull(utcNow())} · {vessel?.lat} {vessel?.lon}</p>
           </div>
           {hasSR&&(
             <button onClick={toggleSpeech} aria-label={listening?'Stop dictation':'Start dictation'}
@@ -833,41 +847,66 @@ const DeckLogModal = ({onSave,onCancel}) => {
             </button>
           )}
         </div>
+
         <div style={{marginBottom:14}}>
           <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:6}}>Entry Category</label>
           <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
             {LOG_CATEGORIES.map(cat=>(
               <button key={cat} onClick={()=>setCategory(cat)}
                 style={{padding:'6px 12px',borderRadius:T.radius.pill,fontSize:11,fontWeight:600,cursor:'pointer',border:'none',transition:'all 0.15s',
-                  background:category===cat?T.accent.primary:T.bg.canvas,
+                  background:category===cat?(cat==='Emergency / Incident'?T.accent.coral:T.accent.primary):T.bg.canvas,
                   color:category===cat?'#fff':T.text.muted}}>
                 {cat}
               </button>
             ))}
           </div>
         </div>
+
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>Officer on Watch (OOW) *</label>
+          <input value={oow} onChange={e=>setOow(e.target.value)} placeholder="Name of officer on watch"
+            style={{background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'11px',color:T.text.main,fontSize:13,width:'100%'}}/>
+        </div>
+
         {listening&&(
           <div style={{background:T.accent.soft,borderRadius:T.radius.sm,padding:'9px 14px',marginBottom:12,display:'flex',alignItems:'center',gap:8}}>
             <div style={{width:6,height:6,borderRadius:'50%',background:T.accent.primary,animation:'pulse 1s infinite'}}/>
             <span style={{fontSize:12,color:T.accent.primary,fontWeight:600}}>Listening — speak your entry…</span>
           </div>
         )}
-        <textarea
-          value={text}
-          onChange={e=>setText(e.target.value)}
-          placeholder="Type or dictate your deck log entry…"
-          rows={5}
-          autoFocus
-          style={{width:'100%',background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'14px',color:T.text.main,fontSize:13,resize:'none',fontFamily:'inherit',lineHeight:1.6}}
-        />
-        {!hasSR&&(
-          <p style={{fontSize:11,color:T.text.faint,margin:'8px 0 0',lineHeight:1.5}}>Speech recognition not available in this browser. Type your entry above.</p>
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:11,fontWeight:600,color:T.text.muted,display:'block',marginBottom:5}}>Event Description *</label>
+          <textarea value={text} onChange={e=>setText(e.target.value)}
+            placeholder={isEmergency?'Describe the emergency event in detail…':'Type or dictate your deck log entry…'}
+            rows={4} autoFocus
+            style={{width:'100%',background:T.bg.canvas,border:'none',borderRadius:T.radius.sm,padding:'14px',color:T.text.main,fontSize:13,resize:'none',fontFamily:'inherit',lineHeight:1.6}}/>
+        </div>
+
+        {isEmergency&&(
+          <>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:11,fontWeight:700,color:T.accent.coral,display:'block',marginBottom:5}}>Action Taken * (required)</label>
+              <textarea value={actionTaken} onChange={e=>setActionTaken(e.target.value)}
+                placeholder="Immediate actions taken: alarms raised, crew mustered, systems isolated…"
+                rows={3}
+                style={{width:'100%',background:'rgba(255,90,95,0.06)',border:`1px solid rgba(255,90,95,0.3)`,borderRadius:T.radius.sm,padding:'12px',color:T.text.main,fontSize:13,resize:'none',fontFamily:'inherit',lineHeight:1.6}}/>
+            </div>
+            <button onClick={()=>setMasterNotified(m=>!m)}
+              style={{width:'100%',background:masterNotified?'rgba(0,229,143,0.08)':T.bg.canvas,border:`1px solid ${masterNotified?T.accent.green:T.bg.surfaceAlt}`,borderRadius:T.radius.md,padding:'14px',marginBottom:16,display:'flex',gap:12,alignItems:'center',cursor:'pointer',textAlign:'left',transition:'all 0.2s'}}>
+              <div style={{width:20,height:20,borderRadius:6,border:`2px solid ${masterNotified?T.accent.green:T.text.faint}`,background:masterNotified?T.accent.green:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.2s'}}>
+                {masterNotified&&<Check size={12} color="#fff"/>}
+              </div>
+              <span style={{fontSize:13,color:T.text.main,lineHeight:1.5}}>Master has been notified and is aware of this incident</span>
+            </button>
+          </>
         )}
-        <div style={{display:'flex',gap:12,marginTop:20}}>
+
+        {!hasSR&&<p style={{fontSize:11,color:T.text.faint,margin:'0 0 16px',lineHeight:1.5}}>Speech recognition not available in this browser.</p>}
+        <div style={{display:'flex',gap:12,marginTop:4}}>
           <button onClick={onCancel} style={{flex:1,background:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:T.text.main,fontSize:14,fontWeight:600,cursor:'pointer'}}>Cancel</button>
-          <button onClick={save} disabled={!text.trim()}
-            style={{flex:2,background:text.trim()?T.accent.primary:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:text.trim()?'#fff':T.text.faint,fontSize:14,fontWeight:700,cursor:text.trim()?'pointer':'not-allowed',transition:'all 0.2s'}}>
-            Save Entry
+          <button onClick={save} disabled={!canSave}
+            style={{flex:2,background:canSave?(isEmergency?T.accent.coral:T.accent.primary):T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:canSave?'#fff':T.text.faint,fontSize:14,fontWeight:700,cursor:canSave?'pointer':'not-allowed',transition:'all 0.2s'}}>
+            {isEmergency?'Log Emergency Entry →':'Save Entry'}
           </button>
         </div>
       </div>
@@ -1473,16 +1512,36 @@ function BridgeViewWrapper() {
               <p style={{fontSize:12,color:T.text.faint,margin:0}}>Tap "New Entry" to record your first entry</p>
             </Card>
           ):deckLog.map((entry,i)=>(
-            <Card key={i} className="hover-card" style={{animation:`fadeUp 0.4s ease-out ${i*0.04}s both`}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8,marginBottom:6}}>
-                <div>
+            <Card key={i} className="hover-card" style={{animation:`fadeUp 0.4s ease-out ${i*0.04}s both`,border:entry.emergency?`1px solid ${T.accent.coral}`:'1px solid transparent',borderLeft:entry.emergency?`3px solid ${T.accent.coral}`:'3px solid transparent'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8,marginBottom:4}}>
+                <div style={{flex:1}}>
                   <p style={{fontSize:11,fontFamily:'monospace',color:T.text.muted,margin:'0 0 4px'}}>{utcFull(entry.timestamp)}</p>
-                  {entry.category&&<Badge label={entry.category} color={T.accent.primary} bg={T.accent.soft}/>}
+                  <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                    {entry.category&&<Badge label={entry.category} color={entry.emergency?T.accent.coral:T.accent.primary} bg={entry.emergency?'rgba(255,90,95,0.15)':T.accent.soft}/>}
+                    {entry.source==='gmdss'&&<Badge label="AUTO" color={T.accent.cyan} bg="rgba(18,212,255,0.1)"/>}
+                  </div>
                 </div>
-                <Badge label={entry.author} color={T.text.muted} bg={T.bg.surfaceAlt}/>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4,flexShrink:0}}>
+                  <Badge label={entry.oow||entry.author} color={T.text.muted} bg={T.bg.surfaceAlt}/>
+                  {entry.oow&&entry.oow!==entry.author&&<span style={{fontSize:9,color:T.text.faint,fontFamily:'monospace'}}>via {entry.author}</span>}
+                </div>
               </div>
-              {entry.lat&&<p style={{fontSize:10,fontFamily:'monospace',color:T.text.faint,margin:'0 0 6px'}}>{entry.lat} {entry.lon} · COG {entry.cog} · SOG {entry.sog} kt</p>}
-              <p style={{fontSize:13,color:T.text.vessel,lineHeight:1.6,margin:0}}>{entry.text}</p>
+              {entry.lat&&<p style={{fontSize:10,fontFamily:'monospace',color:T.text.faint,margin:'2px 0 6px'}}>{entry.lat} {entry.lon} · COG {entry.cog} · SOG {entry.sog} kt</p>}
+              <p style={{fontSize:13,color:entry.emergency?T.text.vessel:T.text.vessel,lineHeight:1.6,margin:0}}>{entry.text}</p>
+              {entry.actionTaken&&(
+                <div style={{marginTop:10,background:'rgba(255,90,95,0.06)',border:`1px solid rgba(255,90,95,0.2)`,borderRadius:T.radius.sm,padding:'9px 12px'}}>
+                  <p style={{fontSize:10,fontWeight:700,color:T.accent.coral,margin:'0 0 3px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Action Taken</p>
+                  <p style={{fontSize:12,color:T.text.muted,margin:0,lineHeight:1.5}}>{entry.actionTaken}</p>
+                </div>
+              )}
+              {entry.emergency&&(
+                <div style={{marginTop:8,display:'flex',justifyContent:'flex-end'}}>
+                  <Badge
+                    label={entry.masterNotified?'Master Notified ✓':'Master NOT Notified'}
+                    color={entry.masterNotified?T.accent.green:T.accent.coral}
+                    bg={entry.masterNotified?'rgba(0,229,143,0.1)':'rgba(255,90,95,0.1)'}/>
+                </div>
+              )}
             </Card>
           ))}
         </div>
@@ -2118,10 +2177,10 @@ const MaintenanceView = () => {
 
 // ── OPS ────────────────────────────────────────────────────
 const OpsView = () => {
-  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,noonData,setNoonData,musterRoll,setMusterRoll,currentUser,scrollH,lang} = useApp();
+  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,noonData,setNoonData,musterRoll,setMusterRoll,currentUser,vessel,setDeckLog,scrollH,lang} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
-  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',robLsmgo:'',avgSpeed:'',cog:'',baro:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meRunHrs:'',etaNext:'',voyageNo:'',remarks:''});
+  const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',robLsmgo:'',avgSpeed:'',cog:'',baro:'',windBft:'',seaState:'',swellDir:'',cargoOb:'',meRunHrs:'',meCumHrs:'',etaNext:'',voyageNo:'',remarks:''});
   const noonRequiredFields = ['voyageNo','lat','lon','distRun','meConsump','rob'];
   const noonReady = noonRequiredFields.every(k=>noonForm[k].trim());
   const [liveTime, setLiveTime] = useState(utcTime());
@@ -2160,7 +2219,19 @@ const OpsView = () => {
       ? {...item,done:true,  verifiedAt:utcNow(), verifiedBy:currentUser?.label||'Officer'}
       : {...item,done:false, verifiedAt:null,     verifiedBy:null};
   }));
-  const logGmdss  = id => setGmdssItems(items=>items.map(item=>item.id===id?{...item,tested:true,testedAt:utcNow(),testedBy:currentUser?.label||'Officer'}:item));
+  const logGmdss = id => {
+    const gmdssItem = gmdssItems.find(i=>i.id===id);
+    const now = utcNow();
+    const tester = currentUser?.label||'Officer';
+    setGmdssItems(items=>items.map(item=>item.id===id?{...item,tested:true,testedAt:now,testedBy:tester}:item));
+    if(gmdssItem) setDeckLog(l=>[{
+      text:`GMDSS equipment tested and confirmed serviceable: ${gmdssItem.item}. Test frequency: ${gmdssItem.freq}. Conducted in accordance with SOLAS Chapter IV.`,
+      category:'GMDSS Test', oow:tester, author:tester,
+      timestamp:now, vessel:vessel?.name,
+      lat:vessel?.lat, lon:vessel?.lon, cog:'293°', sog:'13.4',
+      source:'gmdss', emergency:false,
+    },...l]);
+  };
 
   return (
     <main aria-label="Ops" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px',position:'relative'}}>
@@ -2291,6 +2362,8 @@ const OpsView = () => {
                       ['COG',noonData.cog||'—'],
                       ['Baro',noonData.baro?`${noonData.baro} hPa`:'—'],
                       ['ME Consump',noonData.meConsump?`${noonData.meConsump} MT`:'—'],
+                      ['ME Run Hrs',noonData.meRunHrs?`${noonData.meRunHrs} h`:'—'],
+                      ['ME Total Hrs',noonData.meCumHrs?`${noonData.meCumHrs} h`:'—'],
                       ['ROB VLSFO',noonData.rob?`${noonData.rob} MT`:'—'],
                       ['ROB LSMGO',noonData.robLsmgo?`${noonData.robLsmgo} MT`:'—'],
                       ['Cargo OB',noonData.cargoOb?`${noonData.cargoOb} MT`:'—'],
@@ -2375,6 +2448,7 @@ const OpsView = () => {
                     {k:'rob',    l:'ROB VLSFO (MT)',          ph:'1,842'},
                     {k:'robLsmgo',l:'ROB LSMGO (MT)',         ph:'224'},
                     {k:'meRunHrs',l:'ME Running Hrs (24h)',   ph:'24.0'},
+                    {k:'meCumHrs',l:'ME Total Hrs (cumulative)',ph:'42,180'},
                     {k:'cargoOb',l:'Cargo on Board (MT)',     ph:'275,705'}
                   ].map(({k,l,ph})=>(
                     <div key={k}>
