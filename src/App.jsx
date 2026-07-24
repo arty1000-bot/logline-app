@@ -32,6 +32,50 @@ const T = {
 };
 
 // ═══════════════════════════════════════════════════════
+// STRINGS — EN / EL (Greek)
+// ═══════════════════════════════════════════════════════
+const STRINGS = {
+  en: {
+    // Bottom nav — ship
+    navBridge:'Bridge', navEngine:'Engine', navCrew:'Crew', navMaint:'Maint', navOps:'Ops',
+    // Bottom nav — shore
+    navMarket:'Market', navFleet:'Fleet', navCarbon:'Carbon',
+    // Sub-tabs
+    stPassage:'Passage', stWeather:'Weather', stLog:'Log',
+    stPlant:'Plant',    stAux:'Aux',
+    stJobs:'Jobs',      stSchedule:'Schedule', stSpares:'Spares',
+    stPsc:'PSC',        stGmdss:'GMDSS',       stNoon:'Noon', stMuster:'Muster',
+    // Login
+    selectRole:'Select your operational role',
+    enterAs: r=>`Enter as ${r}`,
+    selectARoleBtn:'Select a role',
+    limitedAccess:'· Limited access',
+    // Roles
+    roleBroker:'Broker',       roleBrokerSub:'Shore Operations',
+    roleMaster:'Master',       roleChiefEng:'Chief Engineer', roleCrew:'Deck / Ratings',
+  },
+  el: {
+    // Bottom nav — ship
+    navBridge:'Γέφυρα', navEngine:'Μηχανές', navCrew:'Πλήρωμα', navMaint:'Συντήρηση', navOps:'Επιχ.',
+    // Bottom nav — shore
+    navMarket:'Αγορά', navFleet:'Στόλος', navCarbon:'Άνθρακας',
+    // Sub-tabs
+    stPassage:'Πλεύση',      stWeather:'Καιρός',    stLog:'Ημερολ.',
+    stPlant:'Μηχανή',        stAux:'Βοηθ.',
+    stJobs:'Βλάβες',         stSchedule:'Πρόγραμμα', stSpares:'Ανταλλ.',
+    stPsc:'PSC',             stGmdss:'GMDSS',        stNoon:'Μεσημβρία', stMuster:'Συναγ.',
+    // Login
+    selectRole:'Επιλέξτε τον ρόλο σας',
+    enterAs: r=>`Είσοδος ως ${r}`,
+    selectARoleBtn:'Επιλέξτε ρόλο',
+    limitedAccess:'· Περιορισμένη πρόσβαση',
+    // Roles
+    roleBroker:'Μεσίτης',      roleBrokerSub:'Ακτή',
+    roleMaster:'Πλοίαρχος',    roleChiefEng:'Α\' Μηχανικός', roleCrew:'Κατάστρωμα',
+  }
+};
+
+// ═══════════════════════════════════════════════════════
 // UTC HELPERS
 // ═══════════════════════════════════════════════════════
 const utcNow  = ()    => new Date().toISOString();
@@ -270,12 +314,12 @@ const Badge = ({label,color,bg}) => (
   <span style={{fontSize:11,fontWeight:700,color,background:bg,padding:'5px 10px',borderRadius:T.radius.pill,whiteSpace:'nowrap',letterSpacing:'0.04em'}}>{label}</span>
 );
 
-const SubTabs = ({tabs,active,setActive}) => (
+const SubTabs = ({tabs,active,setActive,labels={}}) => (
   <nav aria-label="Sub Navigation" style={{display:'flex',background:T.bg.canvas,padding:'5px',borderRadius:T.radius.pill,gap:'3px'}} role="tablist">
     {tabs.map(tb=>(
       <button key={tb} onClick={()=>setActive(tb)} role="tab" aria-selected={active===tb}
-        style={{flex:1,textAlign:'center',padding:'11px 6px',borderRadius:T.radius.pill,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all 0.2s',background:active===tb?T.bg.surfaceAlt:'transparent',color:active===tb?T.text.main:T.text.muted,boxShadow:active===tb?T.shadow.inner:'none',border:'none',textTransform:'capitalize'}}>
-        {tb}
+        style={{flex:1,textAlign:'center',padding:'11px 6px',borderRadius:T.radius.pill,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all 0.2s',background:active===tb?T.bg.surfaceAlt:'transparent',color:active===tb?T.text.main:T.text.muted,boxShadow:active===tb?T.shadow.inner:'none',border:'none',textTransform:labels[tb]?'none':'capitalize'}}>
+        {labels[tb]||tb}
       </button>
     ))}
   </nav>
@@ -402,8 +446,16 @@ const VesselSetup = ({onComplete}) => {
 };
 
 const LoginScreen = ({onLogin, vesselName}) => {
+  const {lang,setLang} = useApp();
+  const S = STRINGS[lang];
   const [selected,setSelected] = useState(null);
-  const roles = ROLES.map(r => r.sub === 'vessel' ? {...r, sub: vesselName} : r);
+  const roleLabels = {
+    broker:  {label:S.roleBroker,    sub:S.roleBrokerSub},
+    master:  {label:S.roleMaster,    sub:vesselName},
+    chiefeng:{label:S.roleChiefEng,  sub:vesselName},
+    crew:    {label:S.roleCrew,      sub:vesselName},
+  };
+  const roles = ROLES.map(r=>({...r,...roleLabels[r.id]}));
   return (
     <main style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',padding:'32px 24px'}}>
       <header style={{marginBottom:40,textAlign:'center',animation:'fadeUp 0.5s ease-out both'}}>
@@ -421,7 +473,8 @@ const LoginScreen = ({onLogin, vesselName}) => {
             <rect fill={T.accent.cyan} x="281.84" y="474.66" width="145.15" height="11.34"/>
           </g>
         </svg>
-        <p style={{fontSize:14,color:T.text.muted,margin:0}}>Select your operational role</p>
+        <p style={{fontSize:14,color:T.text.muted,margin:0}}>{S.selectRole}</p>
+        <button onClick={()=>setLang(l=>l==='en'?'el':'en')} style={{marginTop:10,background:'transparent',border:'none',cursor:'pointer',fontSize:18}}>{lang==='en'?'🇬🇷':'🇬🇧'}</button>
       </header>
       <nav style={{display:'flex',flexDirection:'column',gap:12,marginBottom:28}}>
         {roles.map((role,i)=>(
@@ -432,7 +485,7 @@ const LoginScreen = ({onLogin, vesselName}) => {
             </div>
             <div style={{flex:1}}>
               <p style={{fontSize:15,fontWeight:700,color:T.text.vessel,margin:'0 0 3px'}}>{role.label}</p>
-              <p style={{fontSize:12,color:T.text.muted,margin:0}}>{role.sub}{role.restricted?' · Limited access':''}</p>
+              <p style={{fontSize:12,color:T.text.muted,margin:0}}>{role.sub}{role.restricted?` ${S.limitedAccess}`:''}</p>
             </div>
             {selected===role.id&&<div style={{width:22,height:22,borderRadius:'50%',background:role.color,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,animation:'scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}><Check size={13} color="#fff"/></div>}
           </button>
@@ -440,7 +493,7 @@ const LoginScreen = ({onLogin, vesselName}) => {
       </nav>
       <div style={{animation:'fadeUp 0.5s ease-out 0.5s both'}}>
         <PillButton variant={selected?'primary':'disabled'} onClick={()=>selected&&onLogin(roles.find(r=>r.id===selected))} disabled={!selected}>
-          {selected?`Enter as ${roles.find(r=>r.id===selected)?.label}`:'Select a role'}
+          {selected?S.enterAs(roles.find(r=>r.id===selected)?.label):S.selectARoleBtn}
         </PillButton>
       </div>
     </main>
@@ -805,7 +858,7 @@ const HelpPanel = ({currentUser,onClose}) => {
 // STATUS BAR
 // ═══════════════════════════════════════════════════════
 const MobileStatusBar = ({onLogout,onToggleNvg,onOpenHelp,nvgMode,scrolled}) => {
-  const {activePort} = useApp();
+  const {activePort,lang,setLang} = useApp();
   const isHRA = hraActive(activePort);
   const [time,setTime] = useState(utcTime());
   useEffect(()=>{ const id=setInterval(()=>setTime(utcTime()),1000); return()=>clearInterval(id); },[]);
@@ -818,6 +871,9 @@ const MobileStatusBar = ({onLogout,onToggleNvg,onOpenHelp,nvgMode,scrolled}) => 
         <span style={{fontSize:10,fontWeight:700,color:isHRA?T.accent.coral:T.accent.green,letterSpacing:'0.05em'}}>{isHRA?(activePort?.blocked?'BLOCKED':'HRA'):'CLEAR'}</span>
       </div>
       <div style={{display:'flex',gap:10,alignItems:'center'}}>
+        <button onClick={()=>setLang(l=>l==='en'?'el':'en')} aria-label="Toggle language" style={{background:'transparent',border:'none',cursor:'pointer',fontSize:11,fontWeight:700,color:T.text.muted,letterSpacing:'0.03em',padding:2}}>
+          {lang==='en'?'🇬🇷':'🇬🇧'}
+        </button>
         <button onClick={onOpenHelp} aria-label="Help" style={{background:'transparent',border:'none',cursor:'pointer',display:'flex',alignItems:'center',padding:2}}>
           <HelpCircle size={15} color={T.text.muted}/>
         </button>
@@ -837,7 +893,9 @@ const MobileStatusBar = ({onLogout,onToggleNvg,onOpenHelp,nvgMode,scrolled}) => 
 // BOTTOM BARS
 // ═══════════════════════════════════════════════════════
 const ShoreBottomBar = ({activeTab,setActiveTab}) => {
-  const tabs=[{id:'market',label:'Market',icon:TrendingUp},{id:'fleet',label:'Fleet',icon:Ship},{id:'carbon',label:'Carbon',icon:Leaf}];
+  const {lang} = useApp();
+  const S = STRINGS[lang];
+  const tabs=[{id:'market',label:S.navMarket,icon:TrendingUp},{id:'fleet',label:S.navFleet,icon:Ship},{id:'carbon',label:S.navCarbon,icon:Leaf}];
   return (
     <nav aria-label="Main Navigation" style={{background:'rgba(36,38,48,0.92)',backdropFilter:'blur(20px)',padding:'14px 20px 30px',display:'flex',justifyContent:'space-around',borderRadius:'28px 28px 0 0',boxShadow:T.shadow.bottomNav,flexShrink:0,zIndex:50}}>
       {tabs.map(({id,label,icon:Icon})=>(
@@ -853,15 +911,17 @@ const ShoreBottomBar = ({activeTab,setActiveTab}) => {
 };
 
 const ShipBottomBar = ({activeTab,setActiveTab,defects,pscItems,currentUser}) => {
+  const {lang} = useApp();
+  const S = STRINGS[lang];
   const restricted = currentUser?.restricted;
   const critCount  = defects.filter(d=>d.priority==='critical'&&d.status!=='closed').length;
   const pscFail    = pscItems.filter(x=>!x.done).length;
   const allTabs=[
-    {id:'bridge',label:'Bridge',icon:Navigation},
-    {id:'engine',label:'Engine',icon:Settings},
-    {id:'crew',  label:'Crew',  icon:Users},
-    {id:'maint', label:'Maint', icon:Wrench,badge:critCount||null},
-    {id:'ops',   label:'Ops',   icon:ClipboardList,badge:pscFail||null},
+    {id:'bridge',label:S.navBridge,icon:Navigation},
+    {id:'engine',label:S.navEngine,icon:Settings},
+    {id:'crew',  label:S.navCrew,  icon:Users},
+    {id:'maint', label:S.navMaint, icon:Wrench,badge:critCount||null},
+    {id:'ops',   label:S.navOps,   icon:ClipboardList,badge:pscFail||null},
   ];
   const tabs = restricted ? allTabs.filter(t=>t.id==='bridge'||t.id==='crew') : allTabs;
   return (
@@ -883,7 +943,7 @@ const ShipBottomBar = ({activeTab,setActiveTab,defects,pscItems,currentUser}) =>
 // BRIDGE — FIX: Position editing
 // ═══════════════════════════════════════════════════════
 function BridgeViewWrapper() {
-  const {activePort,setActivePort,vessel,setVessel,bridgeSub,setBridgeSub,deckLog,setDeckLog,scrollH} = useApp();
+  const {activePort,setActivePort,vessel,setVessel,bridgeSub,setBridgeSub,deckLog,setDeckLog,scrollH,lang} = useApp();
   const [isSearch,    setIsSearch]    = useState(false);
   const [query,       setQuery]       = useState('');
   const [showReroute, setShowReroute] = useState(false);
@@ -947,7 +1007,7 @@ function BridgeViewWrapper() {
         </div>
       </header>
 
-      <SubTabs tabs={['passage','weather','log']} active={bridgeSub} setActive={setBridgeSub}/>
+      <SubTabs tabs={['passage','weather','log']} active={bridgeSub} setActive={setBridgeSub} labels={lang==='el'?{passage:STRINGS.el.stPassage,weather:STRINGS.el.stWeather,log:STRINGS.el.stLog}:{}}/>
 
       {bridgeSub==='passage'&&<>
         <div style={{height:180,borderRadius:T.radius.lg,overflow:'hidden',border:`1px solid ${T.bg.surfaceAlt}`}}>
@@ -1147,15 +1207,15 @@ function BridgeViewWrapper() {
 
 // ── ENGINE ───────────────────────────────────────────────
 const EngineView = () => {
-  const {scrollH} = useApp();
+  const {scrollH,lang} = useApp();
   const [engSub,setEngSub] = useState('plant');
   return (
     <main aria-label="Engine" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px'}}>
       <header>
-        <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Engine Room</h1>
-        <p style={{fontSize:13,color:T.text.muted,margin:0}}>Plant status & auxiliaries</p>
+        <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Μηχανοστάσιο':'Engine Room'}</h1>
+        <p style={{fontSize:13,color:T.text.muted,margin:0}}>{lang==='el'?'Κατάσταση μηχανών & βοηθητικών':'Plant status & auxiliaries'}</p>
       </header>
-      <SubTabs tabs={['plant','aux']} active={engSub} setActive={setEngSub}/>
+      <SubTabs tabs={['plant','aux']} active={engSub} setActive={setEngSub} labels={lang==='el'?{plant:STRINGS.el.stPlant,aux:STRINGS.el.stAux}:{}}/>
       {engSub==='plant'&&(
         <div style={{display:'flex',flexDirection:'column',gap:18}}>
           <Card className="hover-card">
@@ -1212,13 +1272,13 @@ const EngineView = () => {
 
 // ── CREW ─────────────────────────────────────────────────
 const CrewView = () => {
-  const {currentUser,scrollH} = useApp();
+  const {currentUser,scrollH,lang} = useApp();
   const restricted = currentUser?.restricted;
   const depts = [...new Set(FULL_CREW.map(c=>c.dept))];
   return (
     <main aria-label="Crew" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px'}}>
       <header>
-        <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Crew Roster</h1>
+        <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Λίστα Πληρώματος':'Crew Roster'}</h1>
         <p style={{fontSize:13,color:T.text.muted,margin:0}}>{FULL_CREW.length} POB · STCW compliant</p>
       </header>
       {depts.map(dept=>(
@@ -1252,7 +1312,7 @@ const CrewView = () => {
 
 // ── MAINTENANCE ────────────────────────────────────────────
 const MaintenanceView = () => {
-  const {defects,setDefects,scrollH} = useApp();
+  const {defects,setDefects,scrollH,lang} = useApp();
   const [maintSub,    setMaintSub]    = useState('jobs');
   const [showAdd,     setShowAdd]     = useState(false);
   const [expandedDef, setExpandedDef] = useState(null);
@@ -1303,15 +1363,15 @@ const MaintenanceView = () => {
     <main aria-label="Maintenance" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px',position:'relative'}}>
       <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
         <div>
-          <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Maintenance</h1>
-          <p style={{fontSize:13,color:T.text.muted,margin:0}}>{defects.filter(d=>d.status!=='closed').length} open defects</p>
+          <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Συντήρηση':'Maintenance'}</h1>
+          <p style={{fontSize:13,color:T.text.muted,margin:0}}>{defects.filter(d=>d.status!=='closed').length} {lang==='el'?'ανοιχτές βλάβες':'open defects'}</p>
         </div>
         <button onClick={()=>setShowAdd(true)} style={{background:T.accent.soft,border:'none',borderRadius:T.radius.pill,padding:'9px 15px',display:'flex',alignItems:'center',gap:6,cursor:'pointer',color:T.accent.primary,fontSize:13,fontWeight:700}}>
           <PlusCircle size={15}/> Log
         </button>
       </header>
 
-      <SubTabs tabs={['jobs','schedule','spares']} active={maintSub} setActive={setMaintSub}/>
+      <SubTabs tabs={['jobs','schedule','spares']} active={maintSub} setActive={setMaintSub} labels={lang==='el'?{jobs:STRINGS.el.stJobs,schedule:STRINGS.el.stSchedule,spares:STRINGS.el.stSpares}:{}}/>
 
       {maintSub==='jobs'&&(
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
@@ -1454,7 +1514,7 @@ const MaintenanceView = () => {
 
 // ── OPS ────────────────────────────────────────────────────
 const OpsView = () => {
-  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,currentUser,scrollH} = useApp();
+  const {pscItems,setPscItems,gmdssItems,setGmdssItems,noonLogged,setNoonLogged,currentUser,scrollH,lang} = useApp();
   const [opsSub,   setOpsSub]   = useState('psc');
   const [showBio,  setShowBio]  = useState(false);
   const [noonForm, setNoonForm] = useState({lat:'',lon:'',distRun:'',distToGo:'',meConsump:'',rob:'',remarks:''});
@@ -1487,10 +1547,10 @@ const OpsView = () => {
   return (
     <main aria-label="Ops" style={{display:'flex',flexDirection:'column',flex:1,gap:22,padding:'22px',position:'relative'}}>
       <header>
-        <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>Ship Ops</h1>
-        <p style={{fontSize:13,color:T.text.muted,margin:0}}>Compliance & records</p>
+        <h1 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 4px',color:T.accent.cyan}}>{lang==='el'?'Επιχειρήσεις':'Ship Ops'}</h1>
+        <p style={{fontSize:13,color:T.text.muted,margin:0}}>{lang==='el'?'Συμμόρφωση & αρχεία':'Compliance & records'}</p>
       </header>
-      <SubTabs tabs={['psc','gmdss','noon','muster']} active={opsSub} setActive={setOpsSub}/>
+      <SubTabs tabs={['psc','gmdss','noon','muster']} active={opsSub} setActive={setOpsSub} labels={lang==='el'?{psc:STRINGS.el.stPsc,gmdss:STRINGS.el.stGmdss,noon:STRINGS.el.stNoon,muster:STRINGS.el.stMuster}:{}}/>
 
       {opsSub==='psc'&&(
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
@@ -1795,6 +1855,7 @@ export default function App() {
   const [scrolled,    setScrolled]    = useState(false);
   const [scrollH,     setScrollH]     = useState(0);
   const [phoneScale,  setPhoneScale]  = useState(1);
+  const [lang,        setLang]        = useState('en');
   const scrollRef = useRef(null);
 
   useEffect(()=>{
@@ -1877,6 +1938,7 @@ export default function App() {
     noonLogged,setNoonLogged,
     deckLog,setDeckLog,
     bridgeSub,setBridgeSub,currentUser,scrollH,
+    lang,setLang,
   };
 
   const nvgFilter = nvgMode?'sepia(1) saturate(5) hue-rotate(295deg) brightness(0.52)':'none';
