@@ -983,12 +983,21 @@ const RerouteModal = ({fromPort,toPort,onConfirm,onCancel}) => {
   );
 };
 
-const HRA_CHECKS = [
-  'BMP5 (Best Management Practices) booklet on board and reviewed by Master.',
-  'Company Security Officer (CSO) notified of HRA transit. Armed escort / citadel readiness confirmed.',
-  'NAVAREA warnings checked. UKMTO and MSCHOA vessel movement report filed.',
-];
+const HRA_CHECKS = {
+  en: [
+    'BMP5 (Best Management Practices) booklet on board and reviewed by Master.',
+    'Company Security Officer (CSO) notified of HRA transit. Armed escort / citadel readiness confirmed.',
+    'NAVAREA warnings checked. UKMTO and MSCHOA vessel movement report filed.',
+  ],
+  el: [
+    'Εγχειρίδιο BMP5 (Βέλτιστες Πρακτικές Διαχείρισης) επί του πλοίου και επισκοπήθηκε από τον Πλοίαρχο.',
+    'Αξιωματικός Ασφαλείας Εταιρείας (CSO) ειδοποιήθηκε για τη διέλευση ΠΥΚ. Επιβεβαιώθηκε ετοιμότητα ένοπλης συνοδείας / citadel.',
+    'Ελέγχθηκαν προειδοποιήσεις NAVAREA. Αναφορά κινήσεων πλοίου στο UKMTO και MSCHOA υποβλήθηκε.',
+  ],
+};
 const HraAcknowledgmentModal = ({port,onConfirm,onCancel}) => {
+  const {lang} = useApp();
+  const checks_list = HRA_CHECKS[lang] || HRA_CHECKS.en;
   const [checks,setChecks] = useState([false,false,false]);
   const allChecked = checks.every(Boolean);
   return (
@@ -996,16 +1005,18 @@ const HraAcknowledgmentModal = ({port,onConfirm,onCancel}) => {
       <div style={{width:'100%',background:T.bg.surface,borderRadius:'32px 32px 0 0',padding:'28px 24px 40px',animation:'slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',maxHeight:'88vh',overflowY:'auto'}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
           <AlertTriangle size={16} color={T.accent.amber}/>
-          <span style={{fontSize:11,fontWeight:700,color:T.accent.amber,textTransform:'uppercase',letterSpacing:'0.1em'}}>High Risk Area Entry</span>
+          <span style={{fontSize:11,fontWeight:700,color:T.accent.amber,textTransform:'uppercase',letterSpacing:'0.1em'}}>{lang==='el'?'Είσοδος Περιοχής Υψηλού Κινδύνου':'High Risk Area Entry'}</span>
         </div>
         <h2 style={{fontSize:19,fontWeight:700,margin:'0 0 4px',color:T.text.vessel}}>{port.name}</h2>
-        <p style={{fontSize:13,color:T.text.muted,margin:'0 0 20px'}}>{port.country} · BMP5 acknowledgment required before proceeding</p>
+        <p style={{fontSize:13,color:T.text.muted,margin:'0 0 20px'}}>{port.country} · {lang==='el'?'Απαιτείται αναγνώριση BMP5 πριν προχωρήσετε':'BMP5 acknowledgment required before proceeding'}</p>
         <div style={{background:'rgba(255,176,23,0.06)',border:`1px solid rgba(255,176,23,0.25)`,borderRadius:T.radius.md,padding:'14px 16px',marginBottom:20}}>
           <p style={{fontSize:12,color:T.accent.amber,lineHeight:1.6,margin:0}}>
-            This port is in or adjacent to a designated High Risk Area (HRA) for piracy/armed robbery. You are required to complete the BMP5 pre-entry checklist before setting this as your destination.
+            {lang==='el'
+              ? 'Αυτό το λιμάνι βρίσκεται σε ή παρακείμενο Περιοχή Υψηλού Κινδύνου (ΠΥΚ) για πειρατεία/ένοπλη ληστεία. Πρέπει να ολοκληρώσετε τον κατάλογο ελέγχου BMP5 πριν ορίσετε αυτόν ως προορισμό σας.'
+              : 'This port is in or adjacent to a designated High Risk Area (HRA) for piracy/armed robbery. You are required to complete the BMP5 pre-entry checklist before setting this as your destination.'}
           </p>
         </div>
-        {HRA_CHECKS.map((text,i)=>(
+        {checks_list.map((text,i)=>(
           <button key={i} onClick={()=>setChecks(c=>c.map((v,idx)=>idx===i?!v:v))} style={{width:'100%',background:checks[i]?T.accent.soft:T.bg.canvas,border:`1px solid ${checks[i]?T.accent.primary:T.bg.surfaceAlt}`,borderRadius:T.radius.md,padding:'14px',marginBottom:10,display:'flex',gap:12,alignItems:'flex-start',cursor:'pointer',textAlign:'left',transition:'all 0.2s'}}>
             <div style={{width:20,height:20,borderRadius:6,border:`2px solid ${checks[i]?T.accent.primary:T.text.faint}`,background:checks[i]?T.accent.primary:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'all 0.2s',marginTop:1}}>
               {checks[i]&&<Check size={12} color="#fff" style={{animation:'scaleIn 0.2s'}}/>}
@@ -1014,9 +1025,9 @@ const HraAcknowledgmentModal = ({port,onConfirm,onCancel}) => {
           </button>
         ))}
         <div style={{display:'flex',gap:12,marginTop:8}}>
-          <button onClick={onCancel} style={{flex:1,background:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:T.text.main,fontSize:14,fontWeight:600,cursor:'pointer'}}>Cancel</button>
+          <button onClick={onCancel} style={{flex:1,background:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:T.text.main,fontSize:14,fontWeight:600,cursor:'pointer'}}>{lang==='el'?'Ακύρωση':'Cancel'}</button>
           <button onClick={onConfirm} disabled={!allChecked} style={{flex:2,background:allChecked?T.accent.amber:T.bg.surfaceAlt,border:'none',borderRadius:T.radius.pill,padding:'15px',color:allChecked?'#000':T.text.faint,fontSize:14,fontWeight:700,cursor:allChecked?'pointer':'not-allowed',transition:'all 0.2s'}}>
-            Acknowledge & Proceed →
+            {lang==='el'?'Αναγνώριση & Συνέχεια →':'Acknowledge & Proceed →'}
           </button>
         </div>
       </div>
@@ -1027,6 +1038,17 @@ const HraAcknowledgmentModal = ({port,onConfirm,onCancel}) => {
 // ═══════════════════════════════════════════════════════
 // INLINE INFO TIP — small "i" that reveals a short explanation
 // ═══════════════════════════════════════════════════════
+const SyncFooter = ({label}) => {
+  const [t, setT] = useState(utcTime());
+  useEffect(()=>{ const id=setInterval(()=>setT(utcTime()),1000); return()=>clearInterval(id); },[]);
+  return (
+    <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
+      <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
+      <span style={{fontSize:11,color:T.text.faint,fontFamily:'monospace'}}>{label} · Last sync {t}</span>
+    </div>
+  );
+};
+
 const InfoTip = ({text,color}) => {
   const [open,setOpen] = useState(false);
   return (
@@ -1294,8 +1316,11 @@ function BridgeViewWrapper() {
       <SubTabs tabs={['passage','weather','log','cargo']} active={bridgeSub} setActive={setBridgeSub} labels={lang==='el'?{passage:STRINGS.el.stPassage,weather:STRINGS.el.stWeather,log:STRINGS.el.stLog,cargo:STRINGS.el.stCargo}:{}}/>
 
       {bridgeSub==='passage'&&<>
-        <div style={{height:180,borderRadius:T.radius.lg,overflow:'hidden',border:`1px solid ${T.bg.surfaceAlt}`}}>
+        <div style={{height:180,borderRadius:T.radius.lg,overflow:'hidden',border:`1px solid ${T.bg.surfaceAlt}`,position:'relative'}}>
           <VesselMap vessel={vessel} destination={activePort}/>
+          <div style={{position:'absolute',bottom:6,left:'50%',transform:'translateX(-50%)',zIndex:1000,background:'rgba(26,27,34,0.82)',backdropFilter:'blur(6px)',borderRadius:T.radius.pill,padding:'4px 10px',pointerEvents:'none'}}>
+            <span style={{fontSize:9,color:T.text.faint,fontWeight:600,letterSpacing:'0.05em'}}>FOR DISPLAY ONLY — NOT A NAVIGATIONAL INSTRUMENT</span>
+          </div>
         </div>
 
         {editPos?(
@@ -2258,7 +2283,7 @@ const OpsView = () => {
                       ['Position',noonData.lat&&noonData.lon?`${noonData.lat} / ${noonData.lon}`:'—'],
                       ['Dist Run',noonData.distRun?`${noonData.distRun} NM`:'—'],
                       ['Dist to Go',noonData.distToGo?`${noonData.distToGo} NM`:'—'],
-                      ['Avg Speed',noonData.avgSpeed?`${noonData.avgSpeed} kt`:'—'],
+                      ['Avg SOG',noonData.avgSpeed?`${noonData.avgSpeed} kt`:'—'],
                       ['COG',noonData.cog||'—'],
                       ['Baro',noonData.baro?`${noonData.baro} hPa`:'—'],
                       ['ME Consump',noonData.meConsump?`${noonData.meConsump} MT`:'—'],
@@ -2305,7 +2330,7 @@ const OpsView = () => {
                 <p style={{fontSize:11,fontWeight:700,color:T.text.faint,textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 8px'}}>Position & Distance</p>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
                   {[{k:'voyageNo',l:'Voyage No.',ph:'2026-07'},
-                    {k:'avgSpeed',l:'Avg Speed (kts)',ph:'13.2'},
+                    {k:'avgSpeed',l:'Avg SOG (kts)',ph:'13.2'},
                     {k:'lat',l:'Latitude',ph:'24°32.1N'},
                     {k:'lon',l:'Longitude',ph:'057°18.4E'},
                     {k:'distRun',l:'Dist Run (NM)',ph:'312'},
@@ -2382,13 +2407,19 @@ const OpsView = () => {
       {opsSub==='muster'&&(
         <div style={{display:'flex',flexDirection:'column',gap:14,animation:'fadeUp 0.4s ease-out'}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-            {['A','B'].map(stn=>(
-              <Card key={stn} style={{background:stn==='A'?'rgba(82,78,250,0.08)':'rgba(18,212,255,0.08)',border:`1px solid ${stn==='A'?T.accent.primary:T.accent.cyan}33`}}>
-                <p style={{fontSize:11,fontWeight:700,color:stn==='A'?T.accent.primary:T.accent.cyan,margin:'0 0 4px',letterSpacing:'0.06em'}}>STATION {stn}</p>
-                <p style={{fontSize:10,color:T.text.muted,margin:0}}>{stn==='A'?'Stbd Lifeboat #1':'Port Lifeboat #2'}</p>
-                <p style={{fontSize:18,fontWeight:800,color:T.text.vessel,margin:'6px 0 0'}}>{FULL_CREW.filter(c=>c.station===stn).length} crew</p>
-              </Card>
-            ))}
+            {['A','B'].map(stn=>{
+              const stnCrew = FULL_CREW.filter(c=>c.station===stn);
+              const commander = stnCrew.find(c=>c.duty.includes('Commander')||c.duty.includes('Coordinator'));
+              return (
+                <Card key={stn} style={{background:stn==='A'?'rgba(82,78,250,0.08)':'rgba(18,212,255,0.08)',border:`1px solid ${stn==='A'?T.accent.primary:T.accent.cyan}33`}}>
+                  <p style={{fontSize:11,fontWeight:700,color:stn==='A'?T.accent.primary:T.accent.cyan,margin:'0 0 2px',letterSpacing:'0.06em'}}>STATION {stn}</p>
+                  <p style={{fontSize:10,color:T.text.muted,margin:'0 0 4px'}}>{stn==='A'?'Stbd Lifeboat #1':'Port Lifeboat #2'}</p>
+                  <p style={{fontSize:18,fontWeight:800,color:T.text.vessel,margin:'0 0 6px'}}>{stnCrew.length} crew</p>
+                  {commander&&<p style={{fontSize:10,color:T.text.muted,margin:0,lineHeight:1.4}}>CDR: <span style={{fontWeight:700,color:T.text.vessel}}>{commander.name}</span></p>}
+                  <p style={{fontSize:10,color:T.text.faint,margin:'2px 0 0'}}>{stnCrew.slice(0,3).map(c=>c.name.split(',')[0]).join(', ')}{stnCrew.length>3?` +${stnCrew.length-3}`:''}</p>
+                </Card>
+              );
+            })}
           </div>
           {(()=>{
             const presentCount = FULL_CREW.filter(c=>musterRoll[c.id]!=='ABSENT').length;
@@ -2525,10 +2556,7 @@ const ShoreMarketView = () => {
         ))}
         <p style={{fontSize:10,color:T.text.faint,margin:'4px 0 0',textAlign:'right'}}>↑ rising bunker price = higher voyage cost</p>
       </Card>
-      <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
-        <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
-        <span style={{fontSize:11,color:T.text.faint,fontFamily:'monospace'}}>VSAT · Last sync 22:27Z</span>
-      </div>
+      <SyncFooter label="VSAT"/>
     </main>
   );
 };
@@ -2563,10 +2591,7 @@ const FleetView = () => {
           </div>
         </Card>
       ))}
-      <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
-        <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
-        <span style={{fontSize:11,color:T.text.faint,fontFamily:'monospace'}}>AIS · Last sync 22:27Z</span>
-      </div>
+      <SyncFooter label="AIS"/>
     </main>
   );
 };
@@ -2576,7 +2601,7 @@ const CarbonView = () => {
   const cii=ciiFor(activePort);
   const isRed=activePort?.blocked;
   const cii2={score:'3.21',rating:'B',target:'4.00',dailyCO2:18.4,euEts:false,note:'On track. Waiting orders at Singapore anchorage — EU ETS not applicable (non-EU voyage).'};
-  const totalETS=Math.round(cii.dailyCO2*74); // Pacific Star: non-EU voyage, ETS N/A
+  const totalETS=Math.round(cii.dailyCO2*74*0.5); // 50% rule applies — AG→Rotterdam non-EU leg
   return (
     <main aria-label="Carbon" style={{flex:1,display:'flex',flexDirection:'column',gap:22,padding:'22px'}}>
       <header>
@@ -2622,10 +2647,7 @@ const CarbonView = () => {
         <span style={{fontSize:13,color:T.text.muted,fontWeight:600}}>Fleet EU ETS Today (EU voyages only)</span>
         <span style={{fontFamily:'monospace',fontSize:16,fontWeight:700,color:T.accent.amber}}>{fmtUSD(totalETS)}</span>
       </div>
-      <div style={{marginTop:'auto',paddingTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,opacity:0.35}}>
-        <div style={{width:5,height:5,borderRadius:'50%',background:T.accent.green}}/>
-        <span style={{fontSize:11,color:T.text.faint,fontFamily:'monospace'}}>EU MRV · Last sync 22:27Z</span>
-      </div>
+      <SyncFooter label="EU MRV"/>
     </main>
   );
 };
