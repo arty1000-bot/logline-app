@@ -462,12 +462,70 @@ const CardHeader = ({icon:Icon,title,right}) => (
   </header>
 );
 
+const TruncatedText = ({children, style={}}) => {
+  const ref = useRef(null);
+  const [truncated, setTruncated] = useState(false);
+  const [visible,   setVisible]   = useState(false);
+  const tap = useRef({count:0, timer:null});
+
+  useEffect(() => {
+    const el = ref.current;
+    if(!el) return;
+    const check = () => setTruncated(el.scrollWidth > el.clientWidth + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [children]);
+
+  const onTouchEnd = () => {
+    if(!truncated) return;
+    const t = tap.current;
+    t.count += 1;
+    if(t.count === 1) {
+      t.timer = setTimeout(() => { t.count = 0; }, 350);
+    } else {
+      clearTimeout(t.timer);
+      t.count = 0;
+      setVisible(v => !v);
+    }
+  };
+
+  return (
+    <div style={{position:'relative', minWidth:0}}>
+      <p ref={ref}
+        style={{...style, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', margin:0, cursor:truncated?'help':'default'}}
+        onMouseEnter={() => truncated && setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onTouchEnd={onTouchEnd}
+      >
+        {children}
+      </p>
+      {visible && truncated && (
+        <div role="tooltip" onClick={()=>setVisible(false)} style={{
+          position:'absolute', bottom:'calc(100% + 8px)', left:'50%',
+          transform:'translateX(-50%)', zIndex:99999,
+          background:T.bg.surface, border:`1px solid rgba(82,78,250,0.5)`,
+          borderRadius:T.radius.md, padding:'9px 13px',
+          fontSize:13, color:T.text.main, fontWeight:600,
+          whiteSpace:'normal', wordBreak:'break-word', lineHeight:1.45,
+          boxShadow:'0 8px 28px rgba(0,0,0,0.55)',
+          width:'max-content', maxWidth:240,
+          animation:'fadeUp 0.15s ease-out',
+        }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Stat = ({label,value,unit,accent}) => (
   <div style={{background:T.bg.surfaceAlt,borderRadius:T.radius.sm,padding:'10px 12px',display:'flex',flexDirection:'column',gap:'4px'}}>
     <p style={{fontSize:11,color:T.text.muted,fontWeight:500,margin:0,textTransform:'uppercase',letterSpacing:'0.04em'}}>{label}</p>
-    <p style={{color:accent||T.text.data,fontSize:17,fontWeight:700,letterSpacing:'-0.02em',margin:0,lineHeight:1.1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+    <TruncatedText style={{color:accent||T.text.data,fontSize:17,fontWeight:700,letterSpacing:'-0.02em',lineHeight:1.1}}>
       {value}{unit&&<span style={{color:T.text.faint,fontSize:12,fontWeight:500,marginLeft:4}}>{unit}</span>}
-    </p>
+    </TruncatedText>
   </div>
 );
 
